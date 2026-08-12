@@ -1,0 +1,3087 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>CineNova</title>
+
+    <style>
+
+        @import url(
+            'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap'
+        );
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: "Inter", sans-serif;
+            color: #eee7ff;
+            min-height: 100vh;
+            overflow-x: hidden;
+
+            background:
+                radial-gradient(
+                    circle at 15% 10%,
+                    rgba(76, 29, 149, 0.18),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 85% 20%,
+                    rgba(88, 28, 135, 0.13),
+                    transparent 25%
+                ),
+                radial-gradient(
+                    circle at 50% 85%,
+                    rgba(49, 15, 83, 0.20),
+                    transparent 32%
+                ),
+                #030109;
+        }
+
+
+        /* =========================
+           STARS
+        ========================== */
+
+        .stars,
+        .stars-two {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .stars {
+            background-image:
+                radial-gradient(1px 1px at 8% 14%, #d8b4fe, transparent),
+                radial-gradient(1px 1px at 18% 76%, #ffffff, transparent),
+                radial-gradient(1px 1px at 32% 28%, #c4b5fd, transparent),
+                radial-gradient(1px 1px at 47% 64%, #ffffff, transparent),
+                radial-gradient(1px 1px at 61% 18%, #ddd6fe, transparent),
+                radial-gradient(1px 1px at 73% 73%, #ffffff, transparent),
+                radial-gradient(1px 1px at 86% 31%, #c4b5fd, transparent),
+                radial-gradient(1px 1px at 94% 82%, #ffffff, transparent),
+                radial-gradient(1px 1px at 40% 91%, #ddd6fe, transparent),
+                radial-gradient(1px 1px at 68% 46%, #ffffff, transparent);
+
+            background-size: 340px 340px;
+            opacity: 0.35;
+        }
+
+        .stars-two {
+            background-image:
+                radial-gradient(1.5px 1.5px at 13% 39%, #a855f7, transparent),
+                radial-gradient(1.5px 1.5px at 29% 72%, #7c3aed, transparent),
+                radial-gradient(1.5px 1.5px at 55% 11%, #c084fc, transparent),
+                radial-gradient(1.5px 1.5px at 77% 24%, #8b5cf6, transparent),
+                radial-gradient(1.5px 1.5px at 89% 66%, #c084fc, transparent);
+
+            background-size: 480px 480px;
+            opacity: 0.22;
+        }
+
+
+        /* =========================
+           NAVBAR
+        ========================== */
+
+        .navbar {
+            width: 100%;
+            padding: 23px 5%;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            border-bottom: 1px solid rgba(168, 85, 247, 0.12);
+
+            background: rgba(3, 1, 9, 0.78);
+
+            backdrop-filter: blur(18px);
+
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: "Outfit", sans-serif;
+
+            font-size: 23px;
+            font-weight: 600;
+
+            letter-spacing: 8px;
+
+            color: #f3e8ff;
+
+            text-shadow:
+                0 0 8px rgba(192, 132, 252, 0.65),
+                0 0 24px rgba(126, 34, 206, 0.35);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+        }
+
+        .nav-links a,
+        .watchlist-nav {
+            color: #8f86a3;
+
+            text-decoration: none;
+
+            font-size: 14px;
+            font-weight: 500;
+
+            cursor: pointer;
+
+            transition: 0.25s ease;
+        }
+
+        .nav-links a:hover,
+        .watchlist-nav:hover {
+            color: #d8b4fe;
+
+            text-shadow:
+                0 0 10px rgba(192, 132, 252, 0.5);
+        }
+
+
+        /* =========================
+           HERO
+        ========================== */
+
+        .hero {
+            text-align: center;
+
+            max-width: 1000px;
+
+            margin: auto;
+
+            padding: 90px 20px 55px;
+        }
+
+        .hero h1 {
+            font-family: "Outfit", sans-serif;
+
+            font-size: clamp(44px, 6vw, 72px);
+
+            line-height: 1.06;
+
+            font-weight: 500;
+
+            letter-spacing: -2px;
+
+            color: #f5f0ff;
+
+            margin-bottom: 20px;
+        }
+
+        .hero h1 span {
+            color: #a855f7;
+
+            text-shadow:
+                0 0 12px rgba(168, 85, 247, 0.65),
+                0 0 35px rgba(126, 34, 206, 0.32);
+        }
+
+        .hero > p {
+            color: #71697f;
+
+            font-size: 16px;
+
+            margin-bottom: 38px;
+        }
+
+
+        /* =========================
+           SEARCH
+        ========================== */
+
+        .search-wrapper {
+            position: relative;
+
+            width: min(780px, 100%);
+
+            margin: auto;
+        }
+
+        .search-container {
+            width: 100%;
+
+            display: flex;
+
+            padding: 4px;
+
+            border-radius: 16px;
+
+            background: rgba(9, 5, 18, 0.88);
+
+            border: 1px solid rgba(139, 92, 246, 0.45);
+
+            box-shadow:
+                0 0 25px rgba(109, 40, 217, 0.12),
+                inset 0 0 20px rgba(109, 40, 217, 0.04);
+
+            transition: 0.25s ease;
+        }
+
+        .search-container:focus-within {
+            border-color: rgba(192, 132, 252, 0.75);
+
+            box-shadow:
+                0 0 20px rgba(126, 34, 206, 0.18);
+        }
+
+        .search-container input {
+            flex: 1;
+
+            padding: 18px 21px;
+
+            border: none;
+            outline: none;
+
+            background: transparent;
+
+            color: #f5f3ff;
+
+            font-size: 15px;
+        }
+
+        .search-container input::placeholder {
+            color: #625a70;
+        }
+
+        .search-container button {
+            padding: 0 30px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #6d28d9,
+                    #9333ea
+                );
+
+            color: #faf5ff;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: 0.25s ease;
+        }
+
+        .search-container button:hover {
+            background:
+                linear-gradient(
+                    135deg,
+                    #7c3aed,
+                    #a855f7
+                );
+
+            box-shadow:
+                0 0 24px rgba(168, 85, 247, 0.45);
+        }
+
+
+        /* =========================
+           SUGGESTIONS
+        ========================== */
+
+        .suggestions {
+            position: absolute;
+
+            top: calc(100% + 8px);
+
+            left: 0;
+            right: 0;
+
+            background: rgba(10, 5, 18, 0.98);
+
+            border: 1px solid rgba(168, 85, 247, 0.20);
+
+            border-radius: 16px;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 20px 50px rgba(0, 0, 0, 0.55);
+
+            backdrop-filter: blur(20px);
+
+            z-index: 50;
+
+            display: none;
+
+            text-align: left;
+        }
+
+        .suggestions.visible {
+            display: block;
+        }
+
+        .suggestion-item {
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+            padding: 11px 14px;
+
+            cursor: pointer;
+
+            border-bottom:
+                1px solid rgba(255, 255, 255, 0.04);
+
+            transition: 0.2s ease;
+        }
+
+        .suggestion-item:hover {
+            background:
+                rgba(126, 34, 206, 0.15);
+        }
+
+        .suggestion-item img {
+            width: 42px;
+            height: 58px;
+
+            object-fit: cover;
+
+            border-radius: 6px;
+
+            background: #090510;
+        }
+
+        .suggestion-title {
+            color: #ece3fa;
+
+            font-size: 14px;
+
+            font-weight: 600;
+        }
+
+        .suggestion-year {
+            color: #736a80;
+
+            font-size: 12px;
+
+            margin-top: 3px;
+        }
+
+
+        /* =========================
+           MESSAGE
+        ========================== */
+
+        #message {
+            min-height: 25px;
+
+            margin-top: 17px;
+
+            color: #93879e;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================
+           LOADING
+        ========================== */
+
+        .loader {
+            width: 17px;
+            height: 17px;
+
+            border:
+                2px solid rgba(255,255,255,0.18);
+
+            border-top:
+                2px solid #c084fc;
+
+            border-radius: 50%;
+
+            animation: spin 0.8s linear infinite;
+
+            display: inline-block;
+
+            vertical-align: middle;
+
+            margin-right: 7px;
+        }
+
+        @keyframes spin {
+
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+
+        }
+
+
+        /* =========================
+           MOVIE CARD
+        ========================== */
+
+        .movie-section {
+            width: min(1280px, 94%);
+
+            margin: 0 auto 70px;
+        }
+
+        .movie-card {
+            display: grid;
+
+            grid-template-columns:
+                275px 1fr 235px;
+
+            gap: 38px;
+
+            padding: 26px;
+
+            border-radius: 24px;
+
+            border:
+                1px solid rgba(168, 85, 247, 0.12);
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(12, 6, 22, 0.94),
+                    rgba(4, 2, 10, 0.91)
+                );
+
+            backdrop-filter: blur(20px);
+
+            box-shadow:
+                0 25px 80px rgba(0, 0, 0, 0.62);
+        }
+
+        .poster-container img {
+            width: 100%;
+
+            aspect-ratio: 2 / 3;
+
+            object-fit: cover;
+
+            border-radius: 15px;
+
+            border:
+                1px solid rgba(168, 85, 247, 0.18);
+
+            box-shadow:
+                0 18px 45px rgba(0, 0, 0, 0.62);
+
+            background: #090510;
+        }
+
+        .movie-info {
+            padding: 14px 0;
+        }
+
+        .genre {
+            display: inline-block;
+
+            padding: 7px 12px;
+
+            border-radius: 7px;
+
+            background:
+                rgba(109, 40, 217, 0.11);
+
+            border:
+                1px solid rgba(168, 85, 247, 0.16);
+
+            color: #b990dc;
+
+            font-size: 10px;
+
+            font-weight: 600;
+
+            letter-spacing: 1.1px;
+        }
+
+        .movie-info h2 {
+            font-family: "Outfit", sans-serif;
+
+            font-size: clamp(38px, 4vw, 54px);
+
+            font-weight: 500;
+
+            color: #f5efff;
+
+            margin: 18px 0;
+        }
+
+        .movie-meta {
+            display: flex;
+
+            gap: 24px;
+
+            color: #7f748d;
+
+            font-size: 14px;
+
+            margin-bottom: 30px;
+        }
+
+        .movie-meta span:first-child {
+            color: #c4a1e8;
+        }
+
+        .movie-info h3 {
+            font-family: "Outfit", sans-serif;
+
+            color: #a855f7;
+
+            font-size: 19px;
+
+            font-weight: 500;
+
+            margin-bottom: 11px;
+        }
+
+        .movie-info > p {
+            line-height: 1.75;
+
+            color: #8f879b;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================
+           WATCHLIST BUTTON
+        ========================== */
+
+        .watch-btn {
+            margin-top: 25px;
+
+            padding: 12px 18px;
+
+            border:
+                1px solid rgba(168, 85, 247, 0.25);
+
+            border-radius: 10px;
+
+            background:
+                rgba(109, 40, 217, 0.10);
+
+            color: #c7b0dc;
+
+            cursor: pointer;
+
+            transition: 0.25s ease;
+        }
+
+        .watch-btn:hover {
+            border-color:
+                rgba(192, 132, 252, 0.6);
+
+            background:
+                rgba(109, 40, 217, 0.18);
+
+            color: #eadcff;
+        }
+
+
+        /* =========================
+           DETAILS
+        ========================== */
+
+        .details-grid {
+            margin-top: 30px;
+
+            padding-top: 24px;
+
+            border-top:
+                1px solid rgba(168, 85, 247, 0.10);
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 22px;
+        }
+
+        .details-grid div {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 6px;
+        }
+
+        .label {
+            color: #74508e;
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+        }
+
+        .details-grid span:last-child {
+            color: #c4bdcf;
+
+            font-size: 13px;
+        }
+
+
+        /* =========================
+           RATING
+        ========================== */
+
+        .rating-panel {
+            padding: 24px;
+
+            border-radius: 17px;
+
+            border:
+                1px solid rgba(168, 85, 247, 0.10);
+
+            background:
+                rgba(12, 6, 22, 0.60);
+        }
+
+        .rating-panel h3 {
+            font-family: "Outfit", sans-serif;
+
+            color: #b46ee8;
+
+            font-size: 20px;
+
+            font-weight: 500;
+
+            margin-bottom: 28px;
+        }
+
+        .rating-box {
+            display: flex;
+
+            align-items: baseline;
+
+            gap: 5px;
+
+            color: #655d70;
+        }
+
+        .big-rating {
+            font-family: "Outfit", sans-serif;
+
+            font-size: 42px;
+
+            color: #eee6ff;
+        }
+
+        .rating-source {
+            color: #625a6c;
+
+            font-size: 11px;
+
+            margin-top: 4px;
+        }
+
+        .rating-line {
+            height: 1px;
+
+            background:
+                rgba(168, 85, 247, 0.10);
+
+            margin: 24px 0;
+        }
+
+        .rating-panel h4 {
+            color: #756d80;
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.8px;
+
+            margin-bottom: 7px;
+        }
+
+        .rating-panel p {
+            color: #c7bfd3;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================
+           RECOMMENDATIONS
+        ========================== */
+
+        .recommended {
+            width: min(1280px, 94%);
+
+            margin: 0 auto 90px;
+        }
+
+        .recommended h2 {
+            font-family: "Outfit", sans-serif;
+
+            font-size: 23px;
+
+            font-weight: 500;
+
+            color: #a86ed1;
+
+            margin-bottom: 20px;
+        }
+
+        .recommendation-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(6, 1fr);
+
+            gap: 13px;
+        }
+
+        .recommendation-card {
+            overflow: hidden;
+
+            border-radius: 13px;
+
+            border:
+                1px solid rgba(168, 85, 247, 0.10);
+
+            background:
+                rgba(10, 5, 18, 0.72);
+
+            cursor: pointer;
+
+            transition: 0.3s ease;
+        }
+
+        .recommendation-card:hover {
+            transform: translateY(-5px);
+
+            border-color:
+                rgba(168, 85, 247, 0.30);
+        }
+
+        .recommendation-card img {
+            width: 100%;
+
+            aspect-ratio: 2 / 3;
+
+            object-fit: cover;
+
+            display: block;
+        }
+
+        .recommendation-card p {
+            padding: 11px;
+
+            color: #92899c;
+
+            font-size: 10px;
+
+            letter-spacing: 1px;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+
+        /* =========================
+           WATCHLIST
+        ========================== */
+
+        .watchlist-section {
+            width: min(1280px, 94%);
+
+            margin: 0 auto 90px;
+
+            display: none;
+        }
+
+        .watchlist-section.visible {
+            display: block;
+        }
+
+        .watchlist-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 20px;
+        }
+
+        .watchlist-header h2 {
+            font-family: "Outfit", sans-serif;
+
+            color: #b777df;
+        }
+
+        .clear-watchlist {
+            padding: 9px 14px;
+
+            border:
+                1px solid rgba(168, 85, 247, 0.16);
+
+            border-radius: 8px;
+
+            background:
+                rgba(109, 40, 217, 0.08);
+
+            color: #9d91aa;
+
+            cursor: pointer;
+        }
+
+        .watchlist-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(6, 1fr);
+
+            gap: 13px;
+        }
+
+        .watch-item {
+            position: relative;
+
+            overflow: hidden;
+
+            border-radius: 13px;
+
+            border:
+                1px solid rgba(168, 85, 247, 0.10);
+
+            cursor: pointer;
+        }
+
+        .watch-item img {
+            width: 100%;
+
+            aspect-ratio: 2 / 3;
+
+            object-fit: cover;
+
+            display: block;
+        }
+
+        .remove-watch {
+            position: absolute;
+
+            top: 7px;
+            right: 7px;
+
+            width: 28px;
+            height: 28px;
+
+            border: none;
+
+            border-radius: 50%;
+
+            background:
+                rgba(0, 0, 0, 0.75);
+
+            color: white;
+
+            cursor: pointer;
+        }
+
+
+        /* =========================
+           MODAL
+        ========================== */
+
+        .modal {
+            position: fixed;
+
+            inset: 0;
+
+            background:
+                rgba(0, 0, 0, 0.78);
+
+            backdrop-filter: blur(10px);
+
+            display: none;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+
+            z-index: 500;
+        }
+
+        .modal.visible {
+            display: flex;
+        }
+
+        .modal-box {
+            width: min(900px, 100%);
+
+            max-height: 90vh;
+
+            overflow-y: auto;
+
+            padding: 25px;
+
+            border-radius: 22px;
+
+            border:
+                1px solid rgba(168, 85, 247, 0.22);
+
+            background:
+                #090510;
+
+            box-shadow:
+                0 30px 100px rgba(0, 0, 0, 0.65);
+        }
+
+        .modal-top {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 20px;
+        }
+
+        .modal-top h2 {
+            font-family: "Outfit", sans-serif;
+
+            color: #eadcff;
+        }
+
+        .close-modal {
+            width: 35px;
+            height: 35px;
+
+            border: none;
+
+            border-radius: 50%;
+
+            background:
+                rgba(168, 85, 247, 0.12);
+
+            color: #d8b4fe;
+
+            font-size: 18px;
+
+            cursor: pointer;
+        }
+
+        .modal-content {
+            display: grid;
+
+            grid-template-columns:
+                210px 1fr;
+
+            gap: 25px;
+        }
+
+        .modal-content img {
+            width: 100%;
+
+            border-radius: 12px;
+        }
+
+        .modal-content h3 {
+            color: #a855f7;
+
+            margin-bottom: 10px;
+        }
+
+        .modal-content p {
+            color: #9c91a8;
+
+            line-height: 1.7;
+
+            font-size: 14px;
+
+            margin-bottom: 15px;
+        }
+
+
+        /* =========================
+           FOOTER
+        ========================== */
+
+        footer {
+            padding: 30px;
+
+            border-top:
+                1px solid rgba(168, 85, 247, 0.08);
+
+            text-align: center;
+
+            color: #50495b;
+
+            font-size: 12px;
+        }
+
+
+        /* =========================
+           MOBILE
+        ========================== */
+
+        @media (max-width: 1100px) {
+
+            .movie-card {
+                grid-template-columns:
+                    230px 1fr;
+            }
+
+            .rating-panel {
+                grid-column: 1 / -1;
+            }
+
+            .recommendation-grid,
+            .watchlist-grid {
+                grid-template-columns:
+                    repeat(3, 1fr);
+            }
+
+        }
+
+        @media (max-width: 700px) {
+
+            .navbar {
+                flex-direction: column;
+
+                gap: 18px;
+            }
+
+            .nav-links {
+                gap: 15px;
+
+                flex-wrap: wrap;
+
+                justify-content: center;
+            }
+
+            .hero {
+                padding-top: 55px;
+            }
+
+            .hero h1 {
+                font-size: 42px;
+            }
+
+            .search-container {
+                flex-direction: column;
+
+                padding: 7px;
+            }
+
+            .search-container button {
+                padding: 15px;
+            }
+
+            .movie-card {
+                grid-template-columns: 1fr;
+            }
+
+            .poster-container {
+                max-width: 280px;
+
+                margin: auto;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .recommendation-grid,
+            .watchlist-grid {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .modal-content {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content img {
+                width: 200px;
+
+                margin: auto;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- BACKGROUND -->
+
+    <div class="stars"></div>
+    <div class="stars stars-two"></div>
+
+
+    <!-- NAVIGATION -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            CINENOVA
+        </div>
+
+        <div class="nav-links">
+
+            <a href="#">
+                Home
+            </a>
+
+            <a href="#recommendations">
+                Popular
+            </a>
+
+            <span
+                class="watchlist-nav"
+                id="watchlistNav"
+            >
+                Watchlist
+            </span>
+
+        </div>
+
+    </nav>
+
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <h1>
+            Discover Movies.
+            <span>Explore Universes.</span>
+        </h1>
+
+        <p>
+            Search, discover and save movies you love.
+        </p>
+
+
+        <div class="search-wrapper">
+
+            <div class="search-container">
+
+                <input
+                    id="movieInput"
+                    type="text"
+                    placeholder="Search for a movie..."
+                    autocomplete="off"
+                >
+
+                <button id="searchBtn">
+                    Search
+                </button>
+
+            </div>
+
+
+            <div
+                id="suggestions"
+                class="suggestions"
+            ></div>
+
+        </div>
+
+
+        <p id="message"></p>
+
+    </section>
+
+
+    <!-- MAIN MOVIE -->
+
+    <section class="movie-section">
+
+        <div class="movie-card">
+
+
+            <!-- POSTER -->
+
+            <div class="poster-container">
+
+                <img
+                    id="moviePoster"
+                    src="https://via.placeholder.com/300x450/090510/c084fc?text=CineNova"
+                    alt="Movie Poster"
+                >
+
+            </div>
+
+
+            <!-- MOVIE INFORMATION -->
+
+            <div class="movie-info">
+
+                <div
+                    class="genre"
+                    id="movieGenre"
+                >
+                    MOVIE DETAILS
+                </div>
+
+
+                <h2 id="movieTitle">
+                    Search for a movie
+                </h2>
+
+
+                <div class="movie-meta">
+
+                    <span id="movieRating">
+                        ★ 0.0 / 10
+                    </span>
+
+                    <span id="movieYear">
+                        —
+                    </span>
+
+                </div>
+
+
+                <h3>
+                    Overview
+                </h3>
+
+
+                <p id="moviePlot">
+                    Enter a movie name above to
+                    explore its universe.
+                </p>
+
+
+                <button
+                    class="watch-btn"
+                    id="watchBtn"
+                >
+                    + Add to Watchlist
+                </button>
+
+
+                <div class="details-grid">
+
+                    <div>
+
+                        <span class="label">
+                            Director
+                        </span>
+
+                        <span id="movieDirector">
+                            —
+                        </span>
+
+                    </div>
+
+
+                    <div>
+
+                        <span class="label">
+                            Genre
+                        </span>
+
+                        <span id="movieGenreDetails">
+                            —
+                        </span>
+
+                    </div>
+
+
+                    <div>
+
+                        <span class="label">
+                            Actors
+                        </span>
+
+                        <span id="movieActors">
+                            —
+                        </span>
+
+                    </div>
+
+
+                    <div>
+
+                        <span class="label">
+                            Language
+                        </span>
+
+                        <span id="movieLanguage">
+                            —
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- RATINGS -->
+
+            <aside class="rating-panel">
+
+                <h3>
+                    Ratings
+                </h3>
+
+
+                <div class="rating-box">
+
+                    <span
+                        class="big-rating"
+                        id="ratingValue"
+                    >
+                        0.0
+                    </span>
+
+                    <span>
+                        /10
+                    </span>
+
+                </div>
+
+
+                <div class="rating-source">
+                    IMDb
+                </div>
+
+
+                <div class="rating-line"></div>
+
+
+                <h4>
+                    Release Year
+                </h4>
+
+                <p id="ratingYear">
+                    —
+                </p>
+
+
+                <div class="rating-line"></div>
+
+
+                <h4>
+                    Runtime
+                </h4>
+
+                <p id="movieRuntime">
+                    —
+                </p>
+
+
+                <div class="rating-line"></div>
+
+
+                <h4>
+                    Released
+                </h4>
+
+                <p id="movieReleased">
+                    —
+                </p>
+
+            </aside>
+
+        </div>
+
+    </section>
+
+
+    <!-- RECOMMENDATIONS -->
+
+    <section
+        class="recommended"
+        id="recommendations"
+    >
+
+        <h2>
+            You Might Also Like
+        </h2>
+
+        <div
+            class="recommendation-grid"
+            id="recommendationGrid"
+        ></div>
+
+    </section>
+
+
+    <!-- WATCHLIST -->
+
+    <section
+        class="watchlist-section"
+        id="watchlist"
+    >
+
+        <div class="watchlist-header">
+
+            <h2>
+                My Watchlist
+            </h2>
+
+            <button
+                class="clear-watchlist"
+                id="clearWatchlist"
+            >
+                Clear All
+            </button>
+
+        </div>
+
+
+        <div
+            class="watchlist-grid"
+            id="watchlistGrid"
+        ></div>
+
+    </section>
+
+
+    <!-- MODAL -->
+
+    <div
+        class="modal"
+        id="movieModal"
+    >
+
+        <div class="modal-box">
+
+            <div class="modal-top">
+
+                <h2 id="modalTitle">
+                    Movie
+                </h2>
+
+                <button
+                    class="close-modal"
+                    id="closeModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="modal-content">
+
+                <img
+                    id="modalPoster"
+                    src=""
+                    alt="Movie Poster"
+                >
+
+
+                <div>
+
+                    <h3>
+                        Overview
+                    </h3>
+
+                    <p id="modalPlot">
+                    </p>
+
+
+                    <p>
+                        <strong>
+                            Genre:
+                        </strong>
+
+                        <span id="modalGenre">
+                        </span>
+                    </p>
+
+
+                    <p>
+                        <strong>
+                            Director:
+                        </strong>
+
+                        <span id="modalDirector">
+                        </span>
+                    </p>
+
+
+                    <p>
+                        <strong>
+                            Actors:
+                        </strong>
+
+                        <span id="modalActors">
+                        </span>
+                    </p>
+
+
+                    <p>
+                        <strong>
+                            Rating:
+                        </strong>
+
+                        <span id="modalRating">
+                        </span>
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <p>
+            © 2026 CineNova.
+            Discover beyond the screen.
+        </p>
+
+    </footer>
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script>
+
+        /* =====================================================
+           🔴 PUT YOUR OMDb API KEY HERE
+           
+           Replace ONLY the text between the quotes.
+           
+           Example:
+           const API_KEY = "abc123";
+        ====================================================== */
+
+        const API_KEY =
+            "PASTE_YOUR_OMDB_API_KEY_HERE";
+
+
+        const API_URL =
+            "https://www.omdbapi.com/";
+
+
+        /* =====================================================
+           ELEMENTS
+        ====================================================== */
+
+        const movieInput =
+            document.getElementById(
+                "movieInput"
+            );
+
+        const searchBtn =
+            document.getElementById(
+                "searchBtn"
+            );
+
+        const message =
+            document.getElementById(
+                "message"
+            );
+
+        const suggestions =
+            document.getElementById(
+                "suggestions"
+            );
+
+
+        const moviePoster =
+            document.getElementById(
+                "moviePoster"
+            );
+
+        const movieTitle =
+            document.getElementById(
+                "movieTitle"
+            );
+
+        const movieRating =
+            document.getElementById(
+                "movieRating"
+            );
+
+        const movieYear =
+            document.getElementById(
+                "movieYear"
+            );
+
+        const movieGenre =
+            document.getElementById(
+                "movieGenre"
+            );
+
+        const movieGenreDetails =
+            document.getElementById(
+                "movieGenreDetails"
+            );
+
+        const moviePlot =
+            document.getElementById(
+                "moviePlot"
+            );
+
+        const movieDirector =
+            document.getElementById(
+                "movieDirector"
+            );
+
+        const movieActors =
+            document.getElementById(
+                "movieActors"
+            );
+
+        const movieLanguage =
+            document.getElementById(
+                "movieLanguage"
+            );
+
+        const ratingValue =
+            document.getElementById(
+                "ratingValue"
+            );
+
+        const ratingYear =
+            document.getElementById(
+                "ratingYear"
+            );
+
+        const movieRuntime =
+            document.getElementById(
+                "movieRuntime"
+            );
+
+        const movieReleased =
+            document.getElementById(
+                "movieReleased"
+            );
+
+
+        const recommendationGrid =
+            document.getElementById(
+                "recommendationGrid"
+            );
+
+
+        const watchBtn =
+            document.getElementById(
+                "watchBtn"
+            );
+
+
+        const watchlistNav =
+            document.getElementById(
+                "watchlistNav"
+            );
+
+        const watchlistSection =
+            document.getElementById(
+                "watchlist"
+            );
+
+        const watchlistGrid =
+            document.getElementById(
+                "watchlistGrid"
+            );
+
+        const clearWatchlist =
+            document.getElementById(
+                "clearWatchlist"
+            );
+
+
+        const modal =
+            document.getElementById(
+                "movieModal"
+            );
+
+        const closeModal =
+            document.getElementById(
+                "closeModal"
+            );
+
+        const modalTitle =
+            document.getElementById(
+                "modalTitle"
+            );
+
+        const modalPoster =
+            document.getElementById(
+                "modalPoster"
+            );
+
+        const modalPlot =
+            document.getElementById(
+                "modalPlot"
+            );
+
+        const modalGenre =
+            document.getElementById(
+                "modalGenre"
+            );
+
+        const modalDirector =
+            document.getElementById(
+                "modalDirector"
+            );
+
+        const modalActors =
+            document.getElementById(
+                "modalActors"
+            );
+
+        const modalRating =
+            document.getElementById(
+                "modalRating"
+            );
+
+
+        let currentMovie = null;
+
+
+        /* =====================================================
+           WATCHLIST STORAGE
+        ====================================================== */
+
+        let watchlist = [];
+
+        try {
+
+            watchlist =
+                JSON.parse(
+                    localStorage.getItem(
+                        "cinenova_watchlist"
+                    )
+                ) || [];
+
+        } catch {
+
+            watchlist = [];
+
+        }
+
+
+        /* =====================================================
+           RECOMMENDATION LISTS
+        ====================================================== */
+
+        const recommendationLists = {
+
+            Action: [
+                "The Dark Knight",
+                "Inception",
+                "Gladiator",
+                "Mad Max: Fury Road",
+                "John Wick",
+                "Top Gun: Maverick"
+            ],
+
+            Adventure: [
+                "Interstellar",
+                "The Martian",
+                "Dune",
+                "Jurassic Park",
+                "Avatar",
+                "The Lord of the Rings: The Fellowship of the Ring"
+            ],
+
+            Comedy: [
+                "The Hangover",
+                "Superbad",
+                "Game Night",
+                "21 Jump Street",
+                "Free Guy",
+                "The Grand Budapest Hotel"
+            ],
+
+            Drama: [
+                "The Shawshank Redemption",
+                "Forrest Gump",
+                "Fight Club",
+                "The Green Mile",
+                "Whiplash",
+                "The Godfather"
+            ],
+
+            Horror: [
+                "The Conjuring",
+                "Hereditary",
+                "A Quiet Place",
+                "It",
+                "The Exorcist",
+                "The Shining"
+            ],
+
+            Romance: [
+                "La La Land",
+                "The Notebook",
+                "Titanic",
+                "About Time",
+                "Before Sunrise",
+                "Pride & Prejudice"
+            ],
+
+            "Sci-Fi": [
+                "Interstellar",
+                "Inception",
+                "The Martian",
+                "Arrival",
+                "Blade Runner 2049",
+                "Gravity"
+            ],
+
+            Fantasy: [
+                "Harry Potter and the Sorcerer's Stone",
+                "The Lord of the Rings: The Fellowship of the Ring",
+                "Dune",
+                "Pan's Labyrinth",
+                "Stardust",
+                "Avatar"
+            ]
+
+        };
+
+
+        /* =====================================================
+           API KEY CHECK
+        ====================================================== */
+
+        function apiKeyIsMissing() {
+
+            return (
+                API_KEY ===
+                "PASTE_YOUR_OMDB_API_KEY_HERE"
+                ||
+                API_KEY.trim() === ""
+            );
+
+        }
+
+
+        /* =====================================================
+           SEARCH
+        ====================================================== */
+
+        async function searchMovie(
+            title = movieInput.value.trim()
+        ) {
+
+            const movieName =
+                title.trim();
+
+
+            if (!movieName) {
+
+                message.textContent =
+                    "Please enter a movie name.";
+
+                return;
+
+            }
+
+
+            if (apiKeyIsMissing()) {
+
+                message.textContent =
+                    "Please add your OMDb API key at the bottom of this file.";
+
+                return;
+
+            }
+
+
+            suggestions.classList.remove(
+                "visible"
+            );
+
+
+            message.innerHTML =
+                '<span class="loader"></span>Searching CineNova...';
+
+
+            try {
+
+                const url =
+                    `${API_URL}?apikey=${encodeURIComponent(API_KEY)}&t=${encodeURIComponent(movieName)}&plot=full`;
+
+
+                const response =
+                    await fetch(url);
+
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    "OMDb response:",
+                    data
+                );
+
+
+                if (
+                    data.Response !==
+                    "True"
+                ) {
+
+                    showNotFound(
+                        data.Error ||
+                        "Movie not found."
+                    );
+
+                    return;
+
+                }
+
+
+                message.textContent =
+                    "";
+
+
+                currentMovie =
+                    data;
+
+
+                displayMovie(
+                    data
+                );
+
+
+                loadRecommendations(
+                    data
+                );
+
+            } catch (error) {
+
+                console.error(
+                    error
+                );
+
+                message.textContent =
+                    "Something went wrong while connecting to OMDb.";
+
+            }
+
+        }
+
+
+        /* =====================================================
+           DISPLAY MOVIE
+        ====================================================== */
+
+        function displayMovie(
+            movie
+        ) {
+
+            movieTitle.textContent =
+                movie.Title ||
+                "Unknown Title";
+
+
+            movieYear.textContent =
+                movie.Year ||
+                "—";
+
+
+            if (
+                movie.imdbRating &&
+                movie.imdbRating !==
+                "N/A"
+            ) {
+
+                movieRating.textContent =
+                    `★ ${movie.imdbRating} / 10`;
+
+                ratingValue.textContent =
+                    movie.imdbRating;
+
+            } else {
+
+                movieRating.textContent =
+                    "★ N/A";
+
+                ratingValue.textContent =
+                    "N/A";
+
+            }
+
+
+            movieGenre.textContent =
+                movie.Genre ||
+                "GENRE";
+
+
+            movieGenreDetails.textContent =
+                movie.Genre ||
+                "—";
+
+
+            moviePlot.textContent =
+                movie.Plot ||
+                "No plot available.";
+
+
+            movieDirector.textContent =
+                movie.Director ||
+                "—";
+
+
+            movieActors.textContent =
+                movie.Actors ||
+                "—";
+
+
+            movieLanguage.textContent =
+                movie.Language ||
+                "—";
+
+
+            ratingYear.textContent =
+                movie.Year ||
+                "—";
+
+
+            movieRuntime.textContent =
+                movie.Runtime ||
+                "—";
+
+
+            movieReleased.textContent =
+                movie.Released ||
+                "—";
+
+
+            if (
+                movie.Poster &&
+                movie.Poster !==
+                "N/A"
+            ) {
+
+                moviePoster.src =
+                    movie.Poster;
+
+            } else {
+
+                moviePoster.src =
+                    "https://via.placeholder.com/300x450/090510/c084fc?text=No+Poster";
+
+            }
+
+
+            updateWatchButton();
+
+        }
+
+
+        /* =====================================================
+           SEARCH SUGGESTIONS
+        ====================================================== */
+
+        let suggestionTimer;
+
+
+        movieInput.addEventListener(
+            "input",
+            function () {
+
+                clearTimeout(
+                    suggestionTimer
+                );
+
+
+                const value =
+                    movieInput.value.trim();
+
+
+                if (
+                    value.length < 2
+                ) {
+
+                    suggestions.innerHTML =
+                        "";
+
+                    suggestions.classList.remove(
+                        "visible"
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    apiKeyIsMissing()
+                ) {
+
+                    suggestions.innerHTML =
+                        "";
+
+                    suggestions.classList.remove(
+                        "visible"
+                    );
+
+                    return;
+
+                }
+
+
+                suggestionTimer =
+                    setTimeout(
+                        () => {
+
+                            getSuggestions(
+                                value
+                            );
+
+                        },
+                        400
+                    );
+
+            }
+        );
+
+
+        async function getSuggestions(
+            value
+        ) {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}?apikey=${encodeURIComponent(API_KEY)}&s=${encodeURIComponent(value)}&type=movie`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    data.Response !==
+                    "True"
+                ) {
+
+                    suggestions.innerHTML =
+                        "";
+
+                    suggestions.classList.remove(
+                        "visible"
+                    );
+
+                    return;
+
+                }
+
+
+                suggestions.innerHTML =
+                    "";
+
+
+                data.Search
+                    .slice(0, 5)
+                    .forEach(
+                        movie => {
+
+                            const item =
+                                document.createElement(
+                                    "div"
+                                );
+
+
+                            item.className =
+                                "suggestion-item";
+
+
+                            const img =
+                                document.createElement(
+                                    "img"
+                                );
+
+
+                            img.src =
+                                (
+                                    movie.Poster &&
+                                    movie.Poster !==
+                                    "N/A"
+                                )
+                                ?
+                                movie.Poster
+                                :
+                                "https://via.placeholder.com/42x58/090510/c084fc?text=No";
+
+
+                            const info =
+                                document.createElement(
+                                    "div"
+                                );
+
+
+                            info.innerHTML = `
+                                <div class="suggestion-title">
+                                    ${escapeHtml(movie.Title)}
+                                </div>
+
+                                <div class="suggestion-year">
+                                    ${escapeHtml(movie.Year)}
+                                </div>
+                            `;
+
+
+                            item.appendChild(
+                                img
+                            );
+
+                            item.appendChild(
+                                info
+                            );
+
+
+                            item.addEventListener(
+                                "click",
+                                function () {
+
+                                    movieInput.value =
+                                        movie.Title;
+
+                                    suggestions.classList.remove(
+                                        "visible"
+                                    );
+
+                                    searchMovie(
+                                        movie.Title
+                                    );
+
+                                }
+                            );
+
+
+                            suggestions.appendChild(
+                                item
+                            );
+
+                        }
+                    );
+
+
+                suggestions.classList.add(
+                    "visible"
+                );
+
+            } catch (error) {
+
+                console.error(
+                    error
+                );
+
+            }
+
+        }
+
+
+        /* =====================================================
+           RECOMMENDATIONS
+        ====================================================== */
+
+        async function loadRecommendations(
+            movie
+        ) {
+
+            recommendationGrid.innerHTML =
+                "";
+
+
+            const genres =
+                movie.Genre
+                    ?
+                    movie.Genre
+                        .split(",")
+                        .map(
+                            value =>
+                                value.trim()
+                        )
+                    :
+                    [];
+
+
+            let selectedList =
+                null;
+
+
+            for (
+                const genre of genres
+            ) {
+
+                if (
+                    recommendationLists[
+                        genre
+                    ]
+                ) {
+
+                    selectedList =
+                        recommendationLists[
+                            genre
+                        ];
+
+                    break;
+
+                }
+
+            }
+
+
+            if (
+                !selectedList
+            ) {
+
+                selectedList = [
+                    "Interstellar",
+                    "Inception",
+                    "The Martian",
+                    "Arrival",
+                    "Dune",
+                    "Gravity"
+                ];
+
+            }
+
+
+            selectedList =
+                selectedList.filter(
+                    title =>
+                        title.toLowerCase() !==
+                        movie.Title.toLowerCase()
+                );
+
+
+            const movies =
+                await Promise.all(
+                    selectedList
+                        .slice(0, 6)
+                        .map(
+                            async title => {
+
+                                try {
+
+                                    const response =
+                                        await fetch(
+                                            `${API_URL}?apikey=${encodeURIComponent(API_KEY)}&t=${encodeURIComponent(title)}`
+                                        );
+
+                                    return await response.json();
+
+                                } catch {
+
+                                    return {
+                                        Response:
+                                            "False"
+                                    };
+
+                                }
+
+                            }
+                        )
+                );
+
+
+            const validMovies =
+                movies.filter(
+                    value =>
+                        value.Response ===
+                        "True"
+                );
+
+
+            validMovies.forEach(
+                movie => {
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    card.className =
+                        "recommendation-card";
+
+
+                    const img =
+                        document.createElement(
+                            "img"
+                        );
+
+
+                    img.src =
+                        movie.Poster &&
+                        movie.Poster !==
+                        "N/A"
+                            ?
+                            movie.Poster
+                            :
+                            "https://via.placeholder.com/300x450/090510/c084fc?text=No+Poster";
+
+
+                    const title =
+                        document.createElement(
+                            "p"
+                        );
+
+
+                    title.textContent =
+                        movie.Title;
+
+
+                    card.appendChild(
+                        img
+                    );
+
+                    card.appendChild(
+                        title
+                    );
+
+
+                    card.addEventListener(
+                        "click",
+                        function () {
+
+                            openModal(
+                                movie.Title
+                            );
+
+                        }
+                    );
+
+
+                    recommendationGrid.appendChild(
+                        card
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           MODAL
+        ====================================================== */
+
+        async function openModal(
+            title
+        ) {
+
+            modal.classList.add(
+                "visible"
+            );
+
+
+            modalTitle.textContent =
+                "Loading...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}?apikey=${encodeURIComponent(API_KEY)}&t=${encodeURIComponent(title)}&plot=full`
+                    );
+
+
+                const movie =
+                    await response.json();
+
+
+                if (
+                    movie.Response !==
+                    "True"
+                ) {
+
+                    modalTitle.textContent =
+                        "Movie not found.";
+
+                    return;
+
+                }
+
+
+                modalTitle.textContent =
+                    movie.Title;
+
+
+                modalPoster.src =
+                    (
+                        movie.Poster &&
+                        movie.Poster !==
+                        "N/A"
+                    )
+                        ?
+                        movie.Poster
+                        :
+                        "https://via.placeholder.com/300x450/090510/c084fc?text=No+Poster";
+
+
+                modalPlot.textContent =
+                    movie.Plot ||
+                    "No plot available.";
+
+
+                modalGenre.textContent =
+                    movie.Genre ||
+                    "—";
+
+
+                modalDirector.textContent =
+                    movie.Director ||
+                    "—";
+
+
+                modalActors.textContent =
+                    movie.Actors ||
+                    "—";
+
+
+                modalRating.textContent =
+                    movie.imdbRating &&
+                    movie.imdbRating !==
+                    "N/A"
+                        ?
+                        `${movie.imdbRating}/10`
+                        :
+                        "N/A";
+
+            } catch {
+
+                modalTitle.textContent =
+                    "Unable to load movie.";
+
+            }
+
+        }
+
+
+        /* =====================================================
+           WATCHLIST
+        ====================================================== */
+
+        watchBtn.addEventListener(
+            "click",
+            function () {
+
+                if (
+                    !currentMovie
+                ) {
+
+                    return;
+
+                }
+
+
+                const exists =
+                    watchlist.some(
+                        movie =>
+                            movie.imdbID ===
+                            currentMovie.imdbID
+                    );
+
+
+                if (
+                    exists
+                ) {
+
+                    message.textContent =
+                        "This movie is already in your watchlist.";
+
+                    return;
+
+                }
+
+
+                watchlist.push({
+
+                    imdbID:
+                        currentMovie.imdbID,
+
+                    Title:
+                        currentMovie.Title,
+
+                    Poster:
+                        currentMovie.Poster,
+
+                    Year:
+                        currentMovie.Year
+
+                });
+
+
+                saveWatchlist();
+
+                updateWatchButton();
+
+                renderWatchlist();
+
+
+                message.textContent =
+                    "Added to your watchlist.";
+
+            }
+        );
+
+
+        function updateWatchButton() {
+
+            if (
+                !currentMovie
+            ) {
+
+                watchBtn.textContent =
+                    "+ Add to Watchlist";
+
+                return;
+
+            }
+
+
+            const exists =
+                watchlist.some(
+                    movie =>
+                        movie.imdbID ===
+                        currentMovie.imdbID
+                );
+
+
+            watchBtn.textContent =
+                exists
+                    ?
+                    "✓ In Watchlist"
+                    :
+                    "+ Add to Watchlist";
+
+        }
+
+
+        function saveWatchlist() {
+
+            localStorage.setItem(
+                "cinenova_watchlist",
+                JSON.stringify(
+                    watchlist
+                )
+            );
+
+        }
+
+
+        function renderWatchlist() {
+
+            watchlistGrid.innerHTML =
+                "";
+
+
+            if (
+                watchlist.length ===
+                0
+            ) {
+
+                watchlistGrid.innerHTML = `
+                    <p style="
+                        grid-column: 1 / -1;
+                        color: #6f667b;
+                        padding: 30px 0;
+                    ">
+                        Your watchlist is empty.
+                    </p>
+                `;
+
+                return;
+
+            }
+
+
+            watchlist.forEach(
+                movie => {
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    card.className =
+                        "watch-item";
+
+
+                    const img =
+                        document.createElement(
+                            "img"
+                        );
+
+
+                    img.src =
+                        (
+                            movie.Poster &&
+                            movie.Poster !==
+                            "N/A"
+                        )
+                            ?
+                            movie.Poster
+                            :
+                            "https://via.placeholder.com/300x450/090510/c084fc?text=No+Poster";
+
+
+                    const remove =
+                        document.createElement(
+                            "button"
+                        );
+
+
+                    remove.className =
+                        "remove-watch";
+
+                    remove.textContent =
+                        "×";
+
+
+                    remove.addEventListener(
+                        "click",
+                        function (event) {
+
+                            event.stopPropagation();
+
+
+                            watchlist =
+                                watchlist.filter(
+                                    item =>
+                                        item.imdbID !==
+                                        movie.imdbID
+                                );
+
+
+                            saveWatchlist();
+
+                            renderWatchlist();
+
+                            updateWatchButton();
+
+                        }
+                    );
+
+
+                    card.appendChild(
+                        img
+                    );
+
+                    card.appendChild(
+                        remove
+                    );
+
+
+                    card.addEventListener(
+                        "click",
+                        function () {
+
+                            openModal(
+                                movie.Title
+                            );
+
+                        }
+                    );
+
+
+                    watchlistGrid.appendChild(
+                        card
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           WATCHLIST NAVIGATION
+        ====================================================== */
+
+        watchlistNav.addEventListener(
+            "click",
+            function () {
+
+                watchlistSection.classList.add(
+                    "visible"
+                );
+
+
+                renderWatchlist();
+
+
+                watchlistSection.scrollIntoView(
+                    {
+                        behavior:
+                            "smooth"
+                    }
+                );
+
+            }
+        );
+
+
+        /* =====================================================
+           CLEAR WATCHLIST
+        ====================================================== */
+
+        clearWatchlist.addEventListener(
+            "click",
+            function () {
+
+                watchlist = [];
+
+                saveWatchlist();
+
+                renderWatchlist();
+
+                updateWatchButton();
+
+            }
+        );
+
+
+        /* =====================================================
+           CLOSE MODAL
+        ====================================================== */
+
+        closeModal.addEventListener(
+            "click",
+            function () {
+
+                modal.classList.remove(
+                    "visible"
+                );
+
+            }
+        );
+
+
+        modal.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target ===
+                    modal
+                ) {
+
+                    modal.classList.remove(
+                        "visible"
+                    );
+
+                }
+
+            }
+        );
+
+
+        /* =====================================================
+           NOT FOUND
+        ====================================================== */
+
+        function showNotFound(
+            errorMessage
+        ) {
+
+            message.textContent =
+                errorMessage;
+
+
+            movieTitle.textContent =
+                "Movie Not Found";
+
+
+            movieGenre.textContent =
+                "NO RESULTS";
+
+
+            moviePlot.textContent =
+                "We couldn't find that movie. Try another title or choose one of the suggestions while typing.";
+
+
+            moviePoster.src =
+                "https://via.placeholder.com/300x450/090510/c084fc?text=Not+Found";
+
+
+            movieRating.textContent =
+                "—";
+
+            movieYear.textContent =
+                "—";
+
+            ratingValue.textContent =
+                "—";
+
+            ratingYear.textContent =
+                "—";
+
+            movieRuntime.textContent =
+                "—";
+
+            movieReleased.textContent =
+                "—";
+
+            movieDirector.textContent =
+                "—";
+
+            movieActors.textContent =
+                "—";
+
+            movieLanguage.textContent =
+                "—";
+
+            movieGenreDetails.textContent =
+                "—";
+
+            currentMovie = null;
+
+            updateWatchButton();
+
+        }
+
+
+        /* =====================================================
+           ESCAPE HTML
+        ====================================================== */
+
+        function escapeHtml(
+            value
+        ) {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+            div.textContent =
+                value;
+
+            return div.innerHTML;
+
+        }
+
+
+        /* =====================================================
+           SEARCH BUTTON
+        ====================================================== */
+
+        searchBtn.addEventListener(
+            "click",
+            function () {
+
+                searchMovie();
+
+            }
+        );
+
+
+        /* =====================================================
+           ENTER KEY
+        ====================================================== */
+
+        movieInput.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key ===
+                    "Enter"
+                ) {
+
+                    suggestions.classList.remove(
+                        "visible"
+                    );
+
+                    searchMovie();
+
+                }
+
+            }
+        );
+
+
+        /* =====================================================
+           CLICK OUTSIDE SUGGESTIONS
+        ====================================================== */
+
+        document.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    !event.target.closest(
+                        ".search-wrapper"
+                    )
+                ) {
+
+                    suggestions.classList.remove(
+                        "visible"
+                    );
+
+                }
+
+            }
+        );
+
+
+        /* =====================================================
+           START
+        ====================================================== */
+
+        renderWatchlist();
+
+    </script>
+
+</body>
+
+</html>
