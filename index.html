@@ -1,381 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>CineNova</title>
-
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CHRONOS – movies, timeless</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕰️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@1,500;1,600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-    <div class="stars"></div>
-    <div class="stars stars-two"></div>
-
-    <nav class="navbar">
-
-        <div class="logo">
-            CINENOVA
-        </div>
-
-        <div class="nav-links">
-
-            <a href="#">
-                Home
-            </a>
-
-            <a href="#recommendations">
-                Popular
-            </a>
-
-            <span
-                class="watchlist-nav"
-                id="watchlistNav"
-            >
-                Watchlist
-            </span>
-
-        </div>
-
-    </nav>
-
-
-    <section class="hero">
-
-        <h1>
-            Discover Movies.
-            <span>Explore Universes.</span>
-        </h1>
-
-        <p>
-            Search, discover and save movies you love.
-        </p>
-
-        <div class="search-wrapper">
-
-            <div class="search-container">
-
-                <input
-                    id="movieInput"
-                    type="text"
-                    placeholder="Search for a movie..."
-                    autocomplete="off"
-                >
-
-                <button id="searchBtn">
-                    Search
-                </button>
-
-            </div>
-
-            <div
-                id="suggestions"
-                class="suggestions"
-            ></div>
-
-        </div>
-
-        <p id="message"></p>
-
-    </section>
-
-
-    <section class="movie-section">
-
-        <div class="movie-card">
-
-            <div class="poster-container">
-
-                <img
-                    id="moviePoster"
-                    src="https://via.placeholder.com/300x450/090510/c084fc?text=CineNova"
-                    alt="Movie Poster"
-                >
-
-            </div>
-
-
-            <div class="movie-info">
-
-                <div
-                    class="genre"
-                    id="movieGenre"
-                >
-                    MOVIE DETAILS
-                </div>
-
-                <h2 id="movieTitle">
-                    Search for a movie
-                </h2>
-
-                <div class="movie-meta">
-
-                    <span id="movieRating">
-                        ★ 0.0 / 10
-                    </span>
-
-                    <span id="movieYear">
-                        —
-                    </span>
-
-                </div>
-
-                <h3>
-                    Overview
-                </h3>
-
-                <p id="moviePlot">
-                    Enter a movie name above to
-                    explore its universe.
-                </p>
-
-                <button
-                    class="watch-btn"
-                    id="watchBtn"
-                >
-                    + Add to Watchlist
-                </button>
-
-                <div class="details-grid">
-
-                    <div>
-                        <span class="label">
-                            Director
-                        </span>
-
-                        <span id="movieDirector">
-                            —
-                        </span>
-                    </div>
-
-                    <div>
-                        <span class="label">
-                            Genre
-                        </span>
-
-                        <span id="movieGenreDetails">
-                            —
-                        </span>
-                    </div>
-
-                    <div>
-                        <span class="label">
-                            Actors
-                        </span>
-
-                        <span id="movieActors">
-                            —
-                        </span>
-                    </div>
-
-                    <div>
-                        <span class="label">
-                            Language
-                        </span>
-
-                        <span id="movieLanguage">
-                            —
-                        </span>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <aside class="rating-panel">
-
-                <h3>
-                    Ratings
-                </h3>
-
-                <div class="rating-box">
-
-                    <span
-                        class="big-rating"
-                        id="ratingValue"
-                    >
-                        0.0
-                    </span>
-
-                    <span>
-                        /10
-                    </span>
-
-                </div>
-
-                <div class="rating-source">
-                    IMDb
-                </div>
-
-                <div class="rating-line"></div>
-
-                <h4>
-                    Release Year
-                </h4>
-
-                <p id="ratingYear">
-                    —
-                </p>
-
-                <div class="rating-line"></div>
-
-                <h4>
-                    Runtime
-                </h4>
-
-                <p id="movieRuntime">
-                    —
-                </p>
-
-                <div class="rating-line"></div>
-
-                <h4>
-                    Released
-                </h4>
-
-                <p id="movieReleased">
-                    —
-                </p>
-
-            </aside>
-
-        </div>
-
-    </section>
-
-
-    <section
-        class="recommended"
-        id="recommendations"
-    >
-
-        <h2>
-            You Might Also Like
-        </h2>
-
-        <div
-            class="recommendation-grid"
-            id="recommendationGrid"
-        ></div>
-
-    </section>
-
-
-    <section
-        class="watchlist-section"
-        id="watchlist"
-    >
-
-        <div class="watchlist-header">
-
-            <h2>
-                My Watchlist
-            </h2>
-
-            <button
-                class="clear-watchlist"
-                id="clearWatchlist"
-            >
-                Clear All
-            </button>
-
-        </div>
-
-        <div
-            class="watchlist-grid"
-            id="watchlistGrid"
-        ></div>
-
-    </section>
-
-
-    <div
-        class="modal"
-        id="movieModal"
-    >
-
-        <div class="modal-box">
-
-            <div class="modal-top">
-
-                <h2 id="modalTitle">
-                    Movie
-                </h2>
-
-                <button
-                    class="close-modal"
-                    id="closeModal"
-                >
-                    ×
-                </button>
-
-            </div>
-
-            <div class="modal-content">
-
-                <img
-                    id="modalPoster"
-                    src=""
-                    alt="Movie Poster"
-                >
-
-                <div>
-
-                    <h3>
-                        Overview
-                    </h3>
-
-                    <p id="modalPlot"></p>
-
-                    <p>
-                        <strong>Genre:</strong>
-                        <span id="modalGenre"></span>
-                    </p>
-
-                    <p>
-                        <strong>Director:</strong>
-                        <span id="modalDirector"></span>
-                    </p>
-
-                    <p>
-                        <strong>Actors:</strong>
-                        <span id="modalActors"></span>
-                    </p>
-
-                    <p>
-                        <strong>Rating:</strong>
-                        <span id="modalRating"></span>
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <footer>
-
-        <p>
-            © 2026 CineNova.
-            Discover beyond the screen.
-        </p>
-
-    </footer>
-
-
-    <script src="script.js"></script>
-
+<!-- Melting clock logo (drawn once, reused everywhere) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff4c2"/><stop offset=".35" stop-color="#f5b82e"/>
+      <stop offset=".68" stop-color="#9b5f0c"/><stop offset="1" stop-color="#ffd66b"/>
+    </linearGradient>
+  </defs>
+  <symbol id="clock" viewBox="0 0 200 262">
+    <path fill="url(#gold)" d="M96 12C150 8 190 48 188 104C187 140 160 158 132 166C112 172 102 188 100 210C98 190 80 180 62 160C30 132 8 96 14 62C20 30 56 14 96 12Z"/>
+    <path fill="#070502" d="M97 26C140 22 174 56 172 102C171 130 150 144 128 150C110 156 100 166 99 178C86 170 72 158 58 144C34 120 22 92 28 64C33 40 62 28 97 26Z"/>
+    <path fill="none" stroke="#ffe08a" stroke-width="1.3" opacity=".75" d="M97 26C140 22 174 56 172 102C171 130 150 144 128 150C110 156 100 166 99 178C86 170 72 158 58 144C34 120 22 92 28 64C33 40 62 28 97 26Z"/>
+    <path fill="none" stroke="#fff7d1" stroke-width="2.2" stroke-linecap="round" opacity=".85" d="M38 44C54 26 78 17 100 16"/>
+    <circle cx="101" cy="92" r="55" fill="none" stroke="#c9972f" stroke-width="3" stroke-dasharray="1 5.6" opacity=".6"/>
+    <g fill="#ffd66b" font-family="Cinzel,serif" font-weight="700" font-size="9" text-anchor="middle" dominant-baseline="central">
+      <text x="124" y="52" transform="rotate(30 124 52)">I</text><text x="141" y="69" transform="rotate(60 141 69)">II</text>
+      <text x="147" y="92" transform="rotate(90 147 92)">III</text><text x="141" y="115" transform="rotate(120 141 115)">IV</text>
+      <text x="124" y="132" transform="rotate(150 124 132)">V</text><text x="101" y="138" transform="rotate(180 101 138)">VI</text>
+      <text x="78" y="132" transform="rotate(210 78 132)">VII</text><text x="61" y="115" transform="rotate(240 61 115)">VIII</text>
+      <text x="55" y="92" transform="rotate(270 55 92)">IX</text><text x="61" y="69" transform="rotate(300 61 69)">X</text>
+      <text x="78" y="52" transform="rotate(330 78 52)">XI</text><text x="101" y="46" transform="rotate(360 101 46)">XII</text>
+    </g>
+    <g stroke="#ffd66b" stroke-linecap="round">
+      <path d="M101 92L104 54" stroke-width="2.2"/><path d="M101 92L86 118" stroke-width="3"/>
+      <path d="M101 92L99 100" stroke-width="3"/>
+    </g>
+    <circle cx="101" cy="92" r="4" fill="#ffd66b"/>
+    <path fill="url(#gold)" d="M100 204C93 222 90 236 100 248C110 236 107 222 100 204Z"/>
+    <path fill="none" stroke="#fff7d1" stroke-width="1.5" stroke-linecap="round" opacity=".8" d="M96 226C95 232 96 238 98 242"/>
+  </symbol>
+</svg>
+
+<canvas id="galaxy" aria-hidden="true"></canvas>
+
+<!-- INTRO: spinning gold record, then the clock + name -->
+<div class="intro" id="intro">
+  <div class="turntable">
+    <div class="record"><span class="spindle"></span></div>
+    <div class="sheen"></div>
+    <svg class="arm" viewBox="0 0 300 300" aria-hidden="true">
+      <path d="M262 40L120 196" stroke="url(#gold)" stroke-width="8" stroke-linecap="round" fill="none"/>
+      <rect x="92" y="184" width="34" height="18" rx="3" fill="#15100a" stroke="#d9a63a" stroke-width="2" transform="rotate(48 109 193)"/>
+      <circle cx="262" cy="40" r="20" fill="url(#gold)"/><circle cx="262" cy="40" r="7" fill="#15100a"/>
+    </svg>
+  </div>
+  <div class="brand">
+    <svg class="bigclock" viewBox="0 0 200 262"><use href="#clock"/></svg>
+    <h1>CHRONOS</h1>
+    <span class="tag">movies, timeless</span>
+  </div>
+  <small class="skip">tap anywhere to skip</small>
+</div>
+
+<header class="nav" id="nav">
+  <a class="logo" href="#"><svg viewBox="0 0 200 262"><use href="#clock"/></svg>CHRONOS</a>
+  <input id="search" type="search" placeholder="Search any movie..." aria-label="Search movies">
+</header>
+
+<section class="hero" id="hero"></section>
+
+<main class="browse">
+  <div id="genres" class="chips"></div>
+  <div class="bar">
+    <h2 id="heading">Popular right now</h2>
+    <select id="sort" aria-label="Sort">
+      <option value="popularity.desc">Most popular</option>
+      <option value="vote_average.desc">Top rated</option>
+      <option value="primary_release_date.desc">Newest</option>
+      <option value="revenue.desc">Biggest box office</option>
+    </select>
+  </div>
+  <div id="grid" class="grid"></div>
+  <div id="sentinel" class="sentinel">Loading more movies…</div>
+</main>
+
+<dialog id="modal"></dialog>
+<script src="galaxy.js"></script>
+<script src="intro.js"></script>
+<script src="script.js"></script>
 </body>
-
 </html>

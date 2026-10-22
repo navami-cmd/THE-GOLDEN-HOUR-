@@ -1,688 +1,137 @@
-const API_KEY = "YOUR_API_KEY";
-const API_URL = "https://www.omdbapi.com/";
+// 👇 PASTE YOUR TMDB API KEY (v3) HERE
+const KEY = "3ecb15e92ff4f2224b44b19eb3eb8648";
 
-const movieInput = document.getElementById("movieInput");
-const searchBtn = document.getElementById("searchBtn");
-const suggestions = document.getElementById("suggestions");
-const message = document.getElementById("message");
+const API = "https://api.themoviedb.org/3";
+const IMG = "https://image.tmdb.org/t/p/";
+const $ = s => document.querySelector(s);
 
-const moviePoster = document.getElementById("moviePoster");
-const movieTitle = document.getElementById("movieTitle");
-const movieGenre = document.getElementById("movieGenre");
-const movieRating = document.getElementById("movieRating");
-const movieYear = document.getElementById("movieYear");
-const moviePlot = document.getElementById("moviePlot");
+const state = { genre: "", sort: "popularity.desc", q: "", page: 1, total: 1, loading: false, hero: 0 };
+let heroList = [], heroTimer, cardIndex = 0;
 
-const movieDirector = document.getElementById("movieDirector");
-const movieGenreDetails = document.getElementById("movieGenreDetails");
-const movieActors = document.getElementById("movieActors");
-const movieLanguage = document.getElementById("movieLanguage");
+const api = (path, params = {}) =>
+  fetch(`${API}${path}?api_key=${KEY}&language=en-US&${new URLSearchParams(params)}`).then(r => r.json());
 
-const ratingValue = document.getElementById("ratingValue");
-const ratingYear = document.getElementById("ratingYear");
-const movieRuntime = document.getElementById("movieRuntime");
-const movieReleased = document.getElementById("movieReleased");
+/* ---------- NAV ---------- */
+window.addEventListener("scroll", () => $("#nav").classList.toggle("solid", scrollY > 60));
 
-const watchBtn = document.getElementById("watchBtn");
-
-const recommendationGrid =
-    document.getElementById("recommendationGrid");
-
-const watchlistGrid =
-    document.getElementById("watchlistGrid");
-
-const clearWatchlist =
-    document.getElementById("clearWatchlist");
-
-const watchlistNav =
-    document.getElementById("watchlistNav");
-
-const movieModal =
-    document.getElementById("movieModal");
-
-const closeModal =
-    document.getElementById("closeModal");
-
-const modalTitle =
-    document.getElementById("modalTitle");
-
-const modalPoster =
-    document.getElementById("modalPoster");
-
-const modalPlot =
-    document.getElementById("modalPlot");
-
-const modalGenre =
-    document.getElementById("modalGenre");
-
-const modalDirector =
-    document.getElementById("modalDirector");
-
-const modalActors =
-    document.getElementById("modalActors");
-
-const modalRating =
-    document.getElementById("modalRating");
-
-
-let currentMovie = null;
-
-let watchlist =
-    JSON.parse(localStorage.getItem("cinenovaWatchlist")) || [];
-
-
-/* -----------------------------
-   SEARCH MOVIE
------------------------------ */
-
-async function searchMovie(title) {
-
-    if (!title.trim()) {
-        showMessage("Please enter a movie name.");
-        return;
-    }
-
-    showMessage("Searching...");
-    suggestions.innerHTML = "";
-
-    try {
-
-        const response = await fetch(
-            `${API_URL}?apikey=${API_KEY}&t=${encodeURIComponent(title)}&plot=full`
-        );
-
-        const data = await response.json();
-
-        if (data.Response === "False") {
-            showMessage("Movie not found. Try another name.");
-            return;
-        }
-
-        showMessage("");
-
-        displayMovie(data);
-
-        loadRecommendations(data.Genre);
-
-    } catch (error) {
-
-        console.error(error);
-
-        showMessage(
-            "Something went wrong. Check your API key or internet connection."
-        );
-    }
+/* ---------- HERO ---------- */
+async function loadHero() {
+  const d = await api("/trending/movie/week");
+  heroList = (d.results || []).filter(m => m.backdrop_path).slice(0, 6);
+  if (!heroList.length) { $("#hero").innerHTML = `<div class="info"><h1>Add your TMDB key</h1><p>Open script.js and paste your API key at the top.</p></div>`; return; }
+  showHero(0);
+}
+function showHero(i) {
+  clearInterval(heroTimer);
+  state.hero = i;
+  const m = heroList[i], h = $("#hero");
+  const old = h.querySelector(".bg"); if (old) { old.classList.add("out"); setTimeout(() => old.remove(), 1000); }
+  const img = new Image();
+  img.className = "bg"; img.alt = ""; img.src = IMG + "original" + m.backdrop_path;
+  h.prepend(img);
+  h.querySelector(".info")?.remove(); h.querySelector(".dots")?.remove();
+  h.insertAdjacentHTML("beforeend", `
+    <div class="info">
+      <div><span class="pill star">★ ${m.vote_average.toFixed(1)}</span><span class="pill">${(m.release_date || "").slice(0, 4)}</span><span class="pill">Trending this week</span></div>
+      <h1>${m.title}</h1><p>${m.overview}</p>
+      <div class="btns"><button class="primary" data-open="${m.id}">▶ Watch trailer</button><button data-open="${m.id}">More info</button></div>
+    </div>
+    <div class="dots">${heroList.map((_, k) => `<i class="${k === i ? "on" : ""}" data-dot="${k}"></i>`).join("")}</div>`);
+  heroTimer = setInterval(() => showHero((state.hero + 1) % heroList.length), 7000);
 }
 
-
-/* -----------------------------
-   DISPLAY MOVIE
------------------------------ */
-
-function displayMovie(movie) {
-
-    currentMovie = movie;
-
-    movieTitle.textContent =
-        movie.Title || "Unknown";
-
-    movieGenre.textContent =
-        movie.Genre || "MOVIE DETAILS";
-
-    movieRating.textContent =
-        `★ ${movie.imdbRating || "N/A"} / 10`;
-
-    movieYear.textContent =
-        movie.Year || "—";
-
-    moviePlot.textContent =
-        movie.Plot && movie.Plot !== "N/A"
-            ? movie.Plot
-            : "No overview available.";
-
-    movieDirector.textContent =
-        movie.Director || "—";
-
-    movieGenreDetails.textContent =
-        movie.Genre || "—";
-
-    movieActors.textContent =
-        movie.Actors || "—";
-
-    movieLanguage.textContent =
-        movie.Language || "—";
-
-    ratingValue.textContent =
-        movie.imdbRating || "N/A";
-
-    ratingYear.textContent =
-        movie.Year || "—";
-
-    movieRuntime.textContent =
-        movie.Runtime || "—";
-
-    movieReleased.textContent =
-        movie.Released || "—";
-
-
-    if (
-        movie.Poster &&
-        movie.Poster !== "N/A"
-    ) {
-
-        moviePoster.src = movie.Poster;
-
-    } else {
-
-        moviePoster.src =
-            "https://via.placeholder.com/300x450/090510/c084fc?text=No+Poster";
-    }
-
-
-    updateWatchButton();
-
-    window.scrollTo({
-        top: document.querySelector(".movie-section").offsetTop - 30,
-        behavior: "smooth"
-    });
+/* ---------- GENRES ---------- */
+async function loadGenres() {
+  const d = await api("/genre/movie/list");
+  const list = [{ id: "", name: "All" }, ...(d.genres || [])];
+  $("#genres").innerHTML = list.map(g => `<button class="${g.id === state.genre ? "on" : ""}" data-genre="${g.id}">${g.name}</button>`).join("");
 }
 
+/* ---------- GRID + INFINITE SCROLL ---------- */
+async function loadMore(reset = false) {
+  if (state.loading) return;
+  if (reset) { state.page = 1; state.total = 1; cardIndex = 0; $("#grid").innerHTML = ""; }
+  if (state.page > state.total) return;
+  state.loading = true;
+  const params = { page: state.page };
+  let path = "/discover/movie";
+  if (state.q) { path = "/search/movie"; params.query = state.q; }
+  else {
+    params.sort_by = state.sort;
+    if (state.genre) params.with_genres = state.genre;
+    if (state.sort === "vote_average.desc") params["vote_count.gte"] = 500;
+    if (state.sort === "primary_release_date.desc") params["primary_release_date.lte"] = new Date().toISOString().slice(0, 10);
+  }
+  const d = await api(path, params);
+  state.total = Math.min(d.total_pages || 1, 500);
+  state.page++;
+  const movies = (d.results || []).filter(m => m.poster_path);
+  $("#grid").insertAdjacentHTML("beforeend", movies.map(card).join(""));
+  document.querySelectorAll(".card:not(.in):not(.seen)").forEach(c => { c.classList.add("seen"); reveal.observe(c); });
+  $("#sentinel").textContent = state.page > state.total || !movies.length && state.page === 2 ? (movies.length ? "That's everything!" : "No movies found. Try another search.") : "Loading more movies…";
+  state.loading = false;
+}
+const card = m => `
+  <button class="card" style="--i:${cardIndex++ % 8}" data-open="${m.id}">
+    <div class="pw"><span class="rate">★ ${m.vote_average.toFixed(1)}</span><img loading="lazy" src="${IMG}w342${m.poster_path}" alt="${m.title}"></div>
+    <h3>${m.title}</h3><small>${(m.release_date || "").slice(0, 4) || "TBA"}</small>
+  </button>`;
 
-/* -----------------------------
-   SEARCH BUTTON
------------------------------ */
+const reveal = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { e.target.classList.add("in"); reveal.unobserve(e.target); }
+}), { threshold: .1 });
+new IntersectionObserver(es => { if (es[0].isIntersecting) loadMore(); }, { rootMargin: "600px" }).observe($("#sentinel"));
 
-searchBtn.addEventListener(
-    "click",
-    () => {
-
-        searchMovie(movieInput.value);
-
-    }
-);
-
-
-/* -----------------------------
-   ENTER KEY
------------------------------ */
-
-movieInput.addEventListener(
-    "keydown",
-    (event) => {
-
-        if (event.key === "Enter") {
-
-            searchMovie(movieInput.value);
-
-        }
-
-    }
-);
-
-
-/* -----------------------------
-   SEARCH SUGGESTIONS
------------------------------ */
-
-let suggestionTimeout;
-
-movieInput.addEventListener(
-    "input",
-    () => {
-
-        clearTimeout(suggestionTimeout);
-
-        const value =
-            movieInput.value.trim();
-
-        if (!value) {
-
-            suggestions.innerHTML = "";
-            return;
-        }
-
-        suggestionTimeout =
-            setTimeout(
-                () => getSuggestions(value),
-                400
-            );
-    }
-);
-
-
-async function getSuggestions(query) {
-
-    try {
-
-        const response = await fetch(
-            `${API_URL}?apikey=${API_KEY}&s=${encodeURIComponent(query)}`
-        );
-
-        const data =
-            await response.json();
-
-        suggestions.innerHTML = "";
-
-        if (
-            data.Response === "False" ||
-            !data.Search
-        ) {
-
-            return;
-        }
-
-        data.Search
-            .slice(0, 5)
-            .forEach(movie => {
-
-                const item =
-                    document.createElement("div");
-
-                item.className =
-                    "suggestion-item";
-
-                item.textContent =
-                    `${movie.Title} (${movie.Year})`;
-
-                item.addEventListener(
-                    "click",
-                    () => {
-
-                        movieInput.value =
-                            movie.Title;
-
-                        suggestions.innerHTML = "";
-
-                        searchMovie(movie.Title);
-                    }
-                );
-
-                suggestions.appendChild(item);
-
-            });
-
-    } catch (error) {
-
-        console.error(error);
-
-    }
+function setHeading() {
+  const g = document.querySelector(".chips .on")?.textContent;
+  $("#heading").textContent = state.q ? `Results for "${state.q}"` : g && g !== "All" ? `${g} movies` : "Popular right now";
 }
 
-
-/* -----------------------------
-   RECOMMENDATIONS
------------------------------ */
-
-async function loadRecommendations(genreString) {
-
-    recommendationGrid.innerHTML = "";
-
-    if (!genreString) return;
-
-    const genres =
-        genreString
-            .split(",")
-            .map(g => g.trim());
-
-    const selectedGenre =
-        genres[0];
-
-    const movieList = [];
-
-    const searchTerms = [
-        selectedGenre,
-        "movie",
-        "popular"
-    ];
-
-    try {
-
-        for (
-            const term of searchTerms
-        ) {
-
-            const response = await fetch(
-                `${API_URL}?apikey=${API_KEY}&s=${encodeURIComponent(term)}&type=movie`
-            );
-
-            const data =
-                await response.json();
-
-            if (data.Search) {
-
-                movieList.push(
-                    ...data.Search
-                );
-            }
-
-        }
-
-        const uniqueMovies =
-            [];
-
-        const seen =
-            new Set();
-
-        movieList.forEach(movie => {
-
-            if (
-                !seen.has(movie.imdbID) &&
-                movie.imdbID !== currentMovie?.imdbID
-            ) {
-
-                seen.add(movie.imdbID);
-
-                uniqueMovies.push(movie);
-            }
-
-        });
-
-        uniqueMovies
-            .slice(0, 8)
-            .forEach(movie => {
-
-                createRecommendationCard(movie);
-
-            });
-
-    } catch (error) {
-
-        console.error(error);
-    }
+/* ---------- MODAL ---------- */
+async function openMovie(id) {
+  const dlg = $("#modal");
+  dlg.innerHTML = `<div class="m-body">Loading…</div>`; dlg.showModal();
+  const m = await api(`/movie/${id}`, { append_to_response: "videos,credits" });
+  const trailer = (m.videos?.results || []).find(v => v.site === "YouTube" && v.type === "Trailer") || (m.videos?.results || [])[0];
+  const cast = (m.credits?.cast || []).slice(0, 6).map(c => c.name).join(", ");
+  const dir = (m.credits?.crew || []).find(c => c.job === "Director")?.name;
+  dlg.innerHTML = `
+    <button class="close" data-close>✕ Close</button>
+    <div class="m-top" id="mtop">
+      ${m.backdrop_path ? `<img src="${IMG}w1280${m.backdrop_path}" alt="">` : ""}
+      ${trailer ? `<button class="play" data-play="${trailer.key}" aria-label="Play trailer">▶</button>` : ""}
+    </div>
+    <div class="m-body">
+      <h2>${m.title}</h2>
+      <div><span class="pill star">★ ${m.vote_average.toFixed(1)}</span><span class="pill">${(m.release_date || "").slice(0, 4)}</span>${m.runtime ? `<span class="pill">${Math.floor(m.runtime / 60)}h ${m.runtime % 60}m</span>` : ""}${(m.genres || []).map(g => `<span class="pill">${g.name}</span>`).join("")}</div>
+      ${m.tagline ? `<p><i>${m.tagline}</i></p>` : ""}
+      <p>${m.overview || "No description yet."}</p>
+      ${dir ? `<p class="muted">Directed by ${dir}</p>` : ""}
+      ${cast ? `<p class="muted">Starring ${cast}</p>` : ""}
+    </div>`;
 }
-
-
-function createRecommendationCard(movie) {
-
-    const card =
-        document.createElement("div");
-
-    card.className =
-        "recommendation-card";
-
-    const poster =
-        movie.Poster &&
-        movie.Poster !== "N/A"
-            ? movie.Poster
-            : "https://via.placeholder.com/300x450/090510/c084fc?text=No+Poster";
-
-    card.innerHTML = `
-        <img src="${poster}" alt="${movie.Title}">
-        <h3>${movie.Title}</h3>
-        <p>${movie.Year}</p>
-    `;
-
-    card.addEventListener(
-        "click",
-        () => {
-
-            searchMovie(movie.Title);
-
-        }
-    );
-
-    recommendationGrid.appendChild(card);
-}
-
-
-/* -----------------------------
-   WATCHLIST
------------------------------ */
-
-watchBtn.addEventListener(
-    "click",
-    () => {
-
-        if (!currentMovie) {
-
-            showMessage(
-                "Search for a movie first."
-            );
-
-            return;
-        }
-
-        const alreadyExists =
-            watchlist.some(
-                movie =>
-                    movie.imdbID ===
-                    currentMovie.imdbID
-            );
-
-        if (alreadyExists) {
-
-            watchlist =
-                watchlist.filter(
-                    movie =>
-                        movie.imdbID !==
-                        currentMovie.imdbID
-                );
-
-        } else {
-
-            watchlist.push({
-                imdbID: currentMovie.imdbID,
-                Title: currentMovie.Title,
-                Year: currentMovie.Year,
-                Poster: currentMovie.Poster
-            });
-
-        }
-
-        saveWatchlist();
-
-        updateWatchButton();
-
-        displayWatchlist();
-    }
-);
-
-
-/* -----------------------------
-   UPDATE WATCH BUTTON
------------------------------ */
-
-function updateWatchButton() {
-
-    if (!currentMovie) {
-
-        watchBtn.textContent =
-            "+ Add to Watchlist";
-
-        return;
-    }
-
-    const exists =
-        watchlist.some(
-            movie =>
-                movie.imdbID ===
-                currentMovie.imdbID
-        );
-
-    watchBtn.textContent =
-        exists
-            ? "✓ Remove from Watchlist"
-            : "+ Add to Watchlist";
-}
-
-
-/* -----------------------------
-   SAVE WATCHLIST
------------------------------ */
-
-function saveWatchlist() {
-
-    localStorage.setItem(
-        "cinenovaWatchlist",
-        JSON.stringify(watchlist)
-    );
-}
-
-
-/* -----------------------------
-   DISPLAY WATCHLIST
------------------------------ */
-
-function displayWatchlist() {
-
-    watchlistGrid.innerHTML = "";
-
-    if (watchlist.length === 0) {
-
-        watchlistGrid.innerHTML =
-            `<p class="empty-watchlist">
-                Your watchlist is empty.
-                Search for movies and add them!
-            </p>`;
-
-        return;
-    }
-
-    watchlist.forEach(movie => {
-
-        const card =
-            document.createElement("div");
-
-        card.className =
-            "watchlist-card";
-
-        const poster =
-            movie.Poster &&
-            movie.Poster !== "N/A"
-                ? movie.Poster
-                : "https://via.placeholder.com/300x450/090510/c084fc?text=No+Poster";
-
-        card.innerHTML = `
-            <img src="${poster}" alt="${movie.Title}">
-            <h3>${movie.Title}</h3>
-            <p>${movie.Year}</p>
-        `;
-
-        card.addEventListener(
-            "click",
-            () => {
-
-                searchMovie(movie.Title);
-
-            }
-        );
-
-        watchlistGrid.appendChild(card);
-
-    });
-}
-
-
-/* -----------------------------
-   CLEAR WATCHLIST
------------------------------ */
-
-clearWatchlist.addEventListener(
-    "click",
-    () => {
-
-        if (watchlist.length === 0) {
-            return;
-        }
-
-        watchlist = [];
-
-        saveWatchlist();
-
-        displayWatchlist();
-
-        updateWatchButton();
-    }
-);
-
-
-/* -----------------------------
-   WATCHLIST NAVIGATION
------------------------------ */
-
-watchlistNav.addEventListener(
-    "click",
-    () => {
-
-        document
-            .getElementById("watchlist")
-            .scrollIntoView({
-                behavior: "smooth"
-            });
-    }
-);
-
-
-/* -----------------------------
-   MODAL
------------------------------ */
-
-function openModal(movie) {
-
-    modalTitle.textContent =
-        movie.Title;
-
-    modalPoster.src =
-        movie.Poster !== "N/A"
-            ? movie.Poster
-            : "https://via.placeholder.com/300x450/090510/c084fc?text=No+Poster";
-
-    modalPlot.textContent =
-        movie.Plot || "No overview available.";
-
-    modalGenre.textContent =
-        movie.Genre || "—";
-
-    modalDirector.textContent =
-        movie.Director || "—";
-
-    modalActors.textContent =
-        movie.Actors || "—";
-
-    modalRating.textContent =
-        movie.imdbRating || "N/A";
-
-    movieModal.classList.add("show");
-}
-
-
-closeModal.addEventListener(
-    "click",
-    () => {
-
-        movieModal.classList.remove("show");
-
-    }
-);
-
-
-movieModal.addEventListener(
-    "click",
-    (event) => {
-
-        if (event.target === movieModal) {
-
-            movieModal.classList.remove("show");
-
-        }
-
-    }
-);
-
-
-/* -----------------------------
-   MESSAGE
------------------------------ */
-
-function showMessage(text) {
-
-    message.textContent = text;
-
-}
-
-
-/* -----------------------------
-   INITIAL LOAD
------------------------------ */
-
-displayWatchlist();
+$("#modal").addEventListener("close", () => $("#modal").innerHTML = "");
+
+/* ---------- EVENTS ---------- */
+document.addEventListener("click", e => {
+  const t = e.target;
+  const open = t.closest("[data-open]"), dot = t.closest("[data-dot]"), g = t.closest("[data-genre]"), play = t.closest("[data-play]");
+  if (open) openMovie(open.dataset.open);
+  else if (dot) showHero(+dot.dataset.dot);
+  else if (play) $("#mtop").innerHTML = `<iframe src="https://www.youtube.com/embed/${play.dataset.play}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+  else if (t.closest("[data-close]") || t.id === "modal") $("#modal").close();
+  else if (g) {
+    state.genre = g.dataset.genre; state.q = ""; $("#search").value = "";
+    document.querySelectorAll("[data-genre]").forEach(b => b.classList.toggle("on", b === g));
+    setHeading(); loadMore(true);
+  }
+});
+$("#sort").onchange = e => { state.sort = e.target.value; loadMore(true); };
+let debounce;
+$("#search").oninput = e => {
+  clearTimeout(debounce);
+  debounce = setTimeout(() => { state.q = e.target.value.trim(); setHeading(); loadMore(true); }, 400);
+};
+
+/* ---------- START ---------- */
+loadHero(); loadGenres(); loadMore(true);
