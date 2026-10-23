@@ -12,7 +12,7 @@
     gr.addColorStop(0, `rgba(${r},${g},${b},1)`); gr.addColorStop(.3, `rgba(${r},${g},${b},.4)`); gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
     q.fillStyle = gr; q.fillRect(0, 0, 128, 128); return s;
   };
-  const S = { gold: sprite(255, 200, 100), pale: sprite(255, 238, 200), amber: sprite(225, 140, 40), deep: sprite(150, 85, 20) };
+  const S = { gold: sprite(236, 214, 164), pale: sprite(250, 242, 222), amber: sprite(196, 160, 96), deep: sprite(116, 90, 48) };
   const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
 
   function setup() {
@@ -36,7 +36,7 @@
     neb = [[.15, .25, 1.1, "amber"], [.85, .75, 1.3, "deep"], [.5, .9, 1, "amber"], [.7, .1, .9, "deep"], [.3, .6, .8, "gold"]]
       .map(([nx, ny, sc, k], i) => ({ nx, ny, sc, k, ph: i * 1.7 }));
   }
-  const col = ["#fff1c9", "#ffd98a", "#d99a3a"];
+  const col = ["#fbf5e4", "#ecdcb0", "#bfa066"];
 
   function frame(now) {
     const dt = Math.min(48, now - last || 16); last = now; t += dt;
@@ -54,7 +54,7 @@
     bg.forEach(s => {
       s.x -= .006 * s.z * dt; if (s.x < -2) s.x = w + 2;
       x.globalAlpha = .2 + .8 * Math.abs(Math.sin(t * .0012 * s.ts + s.tw));
-      x.fillStyle = "#ffe9b8"; x.fillRect(s.x - px * s.z * 30, s.y - py * s.z * 30, s.s, s.s);
+      x.fillStyle = "#f7ecd2"; x.fillRect(s.x - px * s.z * 30, s.y - py * s.z * 30, s.s, s.s);
     });
 
     // galaxy core glow
@@ -87,7 +87,7 @@
     shooters.forEach(s => {
       s.x += s.vx * dt / 16; s.y += s.vy * dt / 16; s.life -= .011;
       const g = x.createLinearGradient(s.x, s.y, s.x - s.vx * 16, s.y - s.vy * 16);
-      g.addColorStop(0, `rgba(255,236,170,${s.life})`); g.addColorStop(1, "rgba(255,200,90,0)");
+      g.addColorStop(0, `rgba(250,242,218,${s.life})`); g.addColorStop(1, "rgba(240,222,170,0)");
       x.globalAlpha = 1; x.strokeStyle = g; x.lineWidth = 2; x.beginPath(); x.moveTo(s.x, s.y); x.lineTo(s.x - s.vx * 16, s.y - s.vy * 16); x.stroke();
     });
     x.globalAlpha = 1;

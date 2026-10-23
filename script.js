@@ -39,6 +39,51 @@ const remember = m => cache.set(m.id, { id: m.id, title: m.title, poster_path: m
 const year = m => (m.release_date || "").slice(0, 4) || "TBA";
 const pimg = (m, w = "w342") => m.poster_path ? `<img loading="lazy" src="${IMG}${w}${m.poster_path}" alt="${esc(m.title)}">` : `<div class="noposter"><span>${esc(m.title)}</span></div>`;
 
+/* ---------- poster colours: hero, popup and cards take on each film's palette ---------- */
+const palCache = new Map();
+function rgb2hsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn; let h = 0, s = 0;
+  if (d) { s = d / (1 - Math.abs(2 * l - 1)); h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; }
+  return [h, s, l];
+}
+function palette(path) {
+  if (!path) return Promise.resolve(null);
+  if (palCache.has(path)) return palCache.get(path);
+  const p = new Promise(res => {
+    const im = new Image(); im.crossOrigin = "anonymous";
+    im.onload = () => {
+      try {
+        const W = 36, H = 54, c = document.createElement("canvas"); c.width = W; c.height = H;
+        const x = c.getContext("2d"); x.drawImage(im, 0, 0, W, H); const d = x.getImageData(0, 0, W, H).data;
+        const wt = new Array(36).fill(0), sat = new Array(36).fill(0);
+        for (let i = 0; i < d.length; i += 4) {
+          const [h, s, l] = rgb2hsl(d[i], d[i + 1], d[i + 2]); if (l < .14 || l > .9 || s < .12) continue;
+          const w = s * (1 - Math.abs(l - .5) * 1.4), b = Math.floor(h / 10) % 36; wt[b] += w; sat[b] += w * s;
+        }
+        let best = 0; for (let i = 1; i < 36; i++) if (wt[i] > wt[best]) best = i;
+        res(wt[best] < 1.5 ? null : { h: best * 10 + 5, s: sat[best] / wt[best] });
+      } catch (e) { res(null); }
+    };
+    im.onerror = () => res(null); im.src = IMG + "w92" + path;
+  });
+  palCache.set(path, p); return p;
+}
+const hsl = (h, s, l) => `hsl(${h.toFixed(0)} ${(s * 100).toFixed(0)}% ${l}%)`;
+const clampS = s => Math.min(.8, Math.max(.4, s));
+function applyTint(el, p) {          // p = null falls back to champagne gold
+  const h = p ? p.h : 40, s = p ? clampS(p.s) : .45;
+  Object.entries({ "--a0": hsl(h, s * .5, 93), "--a1": hsl(h, s * .85, 76), "--a2": hsl(h, s, 62), "--a3": hsl(h, s * .9, 38) }).forEach(([k, v]) => el.style.setProperty(k, v));
+}
+function tintScene(path) {
+  palette(path).then(p => { applyTint($("#hero"), p); $("#ambient").style.setProperty("--amb", p ? hsl(p.h, clampS(p.s), 42) : "#8c6e3a"); });
+}
+document.addEventListener("pointerover", e => {       // each card glows in its own poster's colour on hover
+  const pw = e.target.closest?.(".pw"); if (!pw || pw.dataset.t) return;
+  const img = pw.querySelector("img"); if (!img) return; pw.dataset.t = 1;
+  palette(img.getAttribute("src").replace(/^.*?\/w\d+/, "")).then(p => p && pw.style.setProperty("--acc", hsl(p.h, clampS(p.s), 62)));
+});
+
 /* ---------- vault ---------- */
 const inVault = id => vault.some(v => v.id == id);
 function syncVault() {
@@ -78,10 +123,12 @@ function showHero(i) {
     <div class="info">
       <div><span class="pill star">★ ${m.vote_average.toFixed(1)}</span><span class="pill">${year(m)}</span><span class="pill">Trending this week</span></div>
       <h1 class="gold-text">${esc(m.title)}</h1><p>${esc(m.overview)}</p>
-      <div class="btns"><button class="primary" data-open="${m.id}">▶ Watch trailer</button><button data-open="${m.id}">More info</button>
+      <div class="btns"><button class="primary" data-playmovie="${m.id}"><i class="tri"></i> Watch trailer</button><button data-open="${m.id}">More info</button>
       <button class="savebtn ${inVault(m.id) ? "on" : ""}" data-save="${m.id}"><span class="h"></span> Vault</button></div>
     </div>
+    ${m.poster_path ? `<img class="hposter" src="${IMG}w500${m.poster_path}" alt="">` : ""}
     <div class="dots">${heroList.map((_, k) => `<i class="${k === i ? "on" : ""}" data-dot="${k}"></i>`).join("")}</div>`);
+  tintScene(m.poster_path);
   heroTimer = setInterval(() => showHero((state.hero + 1) % heroList.length), 7000);
 }
 
@@ -183,7 +230,7 @@ async function loadMore(reset = false) {
   $$(".card:not(.seen)").forEach(c => { c.classList.add("seen"); reveal.observe(c); });
   if (!state.q) $("#count").textContent = `${state.tr.toLocaleString()} films`;
   $("#sentinel").textContent = !grid.children.length ? "No films match these filters. Try removing one above."
-    : state.page > state.total ? (state.tr > 10000 && !state.q ? `Showing the first 10,000 of ${state.tr.toLocaleString()}. Narrow by year, genre or language to see the rest.` : "That's every film we could find ✦")
+    : state.page > state.total ? (state.tr > 10000 && !state.q ? `Showing the first 10,000 of ${state.tr.toLocaleString()}. Narrow by year, genre or language to see the rest.` : "That's every film we could find.")
     : "Loading more films…";
   state.loading = false;
 }
@@ -210,24 +257,34 @@ gridEl.addEventListener("pointermove", e => {
 gridEl.addEventListener("pointerout", e => { const pw = e.target.closest?.(".pw"); if (pw) ["--rx", "--ry"].forEach(v => pw.style.removeProperty(v)); });
 
 /* ---------- movie popup ---------- */
-async function openMovie(id) {
+const yt = k => `<iframe src="https://www.youtube-nocookie.com/embed/${k}?autoplay=1&rel=0&modestbranding=1&playsinline=1${location.protocol.startsWith("http") ? "&origin=" + encodeURIComponent(location.origin) : ""}" title="Trailer" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+async function openMovie(id, autoplay = false) {
   const dlg = $("#modal");
+  ["--a0", "--a1", "--a2", "--a3"].forEach(k => dlg.style.removeProperty(k));
   dlg.innerHTML = `<div class="m-body"><p class="loadmsg">Loading…</p></div>`; if (!dlg.open) dlg.showModal(); dlg.scrollTop = 0;
   let m;
   try { m = await api(`/movie/${id}`, { append_to_response: "videos,credits,watch/providers,recommendations" }); }
   catch (e) { dlg.innerHTML = `<button class="close" data-close>Close</button><div class="m-body"><p>Couldn't load this film. Try again.</p></div>`; return; }
-  remember(m);
-  const vids = m.videos?.results || [], trailer = vids.find(v => v.site === "YouTube" && v.type === "Trailer") || vids.find(v => v.site === "YouTube");
+  remember(m); palette(m.poster_path).then(p => applyTint(dlg, p));
+  const vids = (m.videos?.results || []).filter(v => v.site === "YouTube")
+    .sort((a, b) => (b.type === "Trailer") - (a.type === "Trailer") || (b.official === true) - (a.official === true)).slice(0, 6);
+  const trailer = vids[0];
   const cast = (m.credits?.cast || []).filter(c => c.profile_path).slice(0, 10);
   const dir = (m.credits?.crew || []).find(c => c.job === "Director")?.name;
   const prov = m["watch/providers"]?.results?.[REGION] || {};
   const stream = [...(prov.flatrate || []), ...(prov.free || [])], rent = [...(prov.rent || []), ...(prov.buy || [])];
   const more = (m.recommendations?.results || []).filter(r => r.poster_path).slice(0, 10); more.forEach(remember);
+  const search = `https://www.youtube.com/results?search_query=${encodeURIComponent(m.title + " " + year(m) + " official trailer")}`;
+  const top = autoplay && trailer ? yt(trailer.key)
+    : (m.backdrop_path ? `<img src="${IMG}w1280${m.backdrop_path}" alt="">` : "") +
+      (trailer ? `<button class="play" data-play="${trailer.key}" aria-label="Play trailer"><i class="tri"></i></button>`
+               : `<div class="notrailer"><span>No trailer is listed for this film.</span><a href="${search}" target="_blank" rel="noopener">Search on YouTube</a></div>`);
   dlg.innerHTML = `
-    <button class="close" data-close>✕ Close</button>
-    <div class="m-top" id="mtop">${m.backdrop_path ? `<img src="${IMG}w1280${m.backdrop_path}" alt="">` : ""}
-      ${trailer ? `<button class="play" data-play="${trailer.key}" aria-label="Play trailer">▶</button>` : ""}</div>
+    <button class="close" data-close>Close</button>
+    <div class="m-top" id="mtop">${top}</div>
     <div class="m-body">
+      ${trailer ? `<div class="vids">${vids.map((v, i) => `<button class="${i === 0 ? "on" : ""}" data-vid="${v.key}">${esc(v.name.length > 26 ? v.name.slice(0, 25) + "…" : v.name)}</button>`).join("")}
+        <a class="ytlink" href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener">Open on YouTube</a></div>` : ""}
       <div class="m-head">
         <div class="ring" style="--p:${Math.round(m.vote_average * 10)}"><span>${m.vote_average.toFixed(1)}</span></div>
         <div><h2 class="gold-text">${esc(m.title)}</h2>
@@ -304,24 +361,16 @@ function quiz(step = 0, ans = {}) {
   };
 }
 
-/* ---------- gold sparkle trail ---------- */
-let lastSpark = 0;
-addEventListener("pointermove", e => {
-  if (e.pointerType !== "mouse" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const n = performance.now(); if (n - lastSpark < 70) return; lastSpark = n;
-  const s = document.createElement("i"); s.className = "spark"; s.textContent = "✦";
-  s.style.left = e.clientX + "px"; s.style.top = e.clientY + "px"; s.style.setProperty("--dx", (Math.random() * 40 - 20) + "px");
-  document.body.appendChild(s); setTimeout(() => s.remove(), 900);
-});
-
 /* ---------- events ---------- */
 document.addEventListener("click", e => {
   const t = e.target, q = s => t.closest(s);
   if (q("[data-rdir]")) { const b = q("[data-rdir]"); return $("#rail-" + b.dataset.rid).scrollBy({ left: b.dataset.rdir * innerWidth * .7, behavior: "smooth" }); }
   if (q("[data-save]")) return toggleVault(q("[data-save]").dataset.save);
+  if (q("[data-playmovie]")) { $("#vault").classList.remove("open"); return openMovie(q("[data-playmovie]").dataset.playmovie, true); }
   if (q("[data-open]")) { $("#vault").classList.remove("open"); return openMovie(q("[data-open]").dataset.open); }
   if (q("[data-dot]")) return showHero(+q("[data-dot]").dataset.dot);
-  if (q("[data-play]")) return $("#mtop").innerHTML = `<iframe src="https://www.youtube.com/embed/${q("[data-play]").dataset.play}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+  if (q("[data-play]")) return $("#mtop").innerHTML = yt(q("[data-play]").dataset.play);
+  if (q("[data-vid]")) { $$("[data-vid]").forEach(b => b.classList.toggle("on", b === q("[data-vid]"))); return $("#mtop").innerHTML = yt(q("[data-vid]").dataset.vid); }
   if (q("[data-copy]")) { navigator.clipboard?.writeText(q("[data-copy]").dataset.copy); return toast("Title copied"); }
   if (q("[data-close]") || t.id === "modal") return $("#modal").close();
   if (q("[data-mood]")) { const id = q("[data-mood]").dataset.mood; state.mood === id ? clearKey("mood") : setMood(id); return apply(); }

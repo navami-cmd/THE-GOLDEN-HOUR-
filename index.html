@@ -11,29 +11,32 @@
 </head>
 <body>
 <canvas id="galaxy" aria-hidden="true"></canvas>
-<div class="vignette"></div><div class="grain"></div>
+<div class="ambient" id="ambient"></div><div class="vignette"></div><div class="grain"></div>
 <div class="glow" id="glow"></div>
 <div class="progress" id="progress"></div>
 
-<!-- INTRO: cinematic title card -->
+<!-- INTRO: gold record on a black marble deck, then the title card -->
 <div class="intro" id="intro">
   <div class="door t"></div><div class="door b"></div>
   <div class="seam"></div>
   <div class="stage">
     <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
-    <div class="turntable">
-      <div class="record"><span class="spindle"></span></div>
-      <div class="sheen"></div>
-      <svg class="arm" viewBox="0 0 300 300" aria-hidden="true">
-        <defs><linearGradient id="ag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0bd"/><stop offset=".5" stop-color="#c98f2a"/><stop offset="1" stop-color="#ffe49a"/></linearGradient></defs>
-        <path d="M262 40L120 196" stroke="url(#ag)" stroke-width="8" stroke-linecap="round" fill="none"/>
-        <rect x="92" y="184" width="34" height="18" rx="3" fill="#15100a" stroke="#d9a63a" stroke-width="2" transform="rotate(48 109 193)"/>
-        <circle cx="262" cy="40" r="20" fill="url(#ag)"/><circle cx="262" cy="40" r="7" fill="#15100a"/>
-      </svg>
+    <div class="deck">
+      <div class="plinth">
+        <div class="platter"></div>
+        <div class="record"><span class="label"></span></div>
+        <div class="sheen"></div>
+        <svg class="arm" viewBox="0 0 300 300" aria-hidden="true">
+          <defs><linearGradient id="ag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6ecd0"/><stop offset=".5" stop-color="#b99a5c"/><stop offset="1" stop-color="#eadbb0"/></linearGradient></defs>
+          <path d="M262 40L120 196" stroke="url(#ag)" stroke-width="8" stroke-linecap="round" fill="none"/>
+          <rect x="92" y="184" width="34" height="18" rx="3" fill="#15120c" stroke="#cdb078" stroke-width="2" transform="rotate(48 109 193)"/>
+          <circle cx="262" cy="40" r="22" fill="#0d0c0a" stroke="url(#ag)" stroke-width="3"/><circle cx="262" cy="40" r="8" fill="url(#ag)"/>
+        </svg>
+      </div>
     </div>
     <div class="brand">
       <img class="bigclock" src="logo.svg" alt="">
-      <div class="titlewrap"><h1 class="gold-text">GOLDEN HOUR</h1><i class="glint g1"></i><i class="glint g2"></i><i class="glint g3"></i><span class="flare"></span></div>
+      <div class="titlewrap"><h1 class="gold-text" data-t="GOLDEN HOUR">GOLDEN HOUR</h1><i class="glint g1"></i><i class="glint g2"></i><i class="glint g3"></i></div>
       <p class="tag">every film has its light</p>
     </div>
     <span class="tc" id="tc">00:00:00:00</span><span class="pct" id="pct">0%</span>
@@ -49,7 +52,7 @@
   <button id="vaultBtn">My vault <b id="vaultCount">0</b></button>
 </header>
 
-<section class="hero" id="hero"></section>
+<section class="hero themed" id="hero"></section>
 
 <main class="browse">
   <div id="rails"></div>
@@ -108,7 +111,7 @@
 <div class="roulette" id="roulette"></div>
 <div class="roulette" id="quiz"></div>
 <button id="toTop" aria-label="Back to top">↑</button>
-<dialog id="modal"></dialog>
+<dialog id="modal" class="themed"></dialog>
 <div id="toast" role="status"></div>
 
 <script src="galaxy.js"></script>
