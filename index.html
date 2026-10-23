@@ -15,10 +15,12 @@
 <div class="glow" id="glow"></div>
 <div class="progress" id="progress"></div>
 
-<!-- INTRO -->
+<!-- INTRO: cinematic title card -->
 <div class="intro" id="intro">
-  <div class="door l"></div><div class="door r"></div>
+  <div class="door t"></div><div class="door b"></div>
+  <div class="seam"></div>
   <div class="stage">
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
     <div class="turntable">
       <div class="record"><span class="spindle"></span></div>
       <div class="sheen"></div>
@@ -30,18 +32,18 @@
       </svg>
     </div>
     <div class="brand">
-      <div class="logowrap"><i class="ripple"></i><i class="ripple r2"></i><img class="bigclock" src="logo.svg" alt="" onerror="this.remove()"></div>
-      <h1 class="gold-text">GOLDEN HOUR</h1>
+      <img class="bigclock" src="logo.svg" alt="">
+      <div class="titlewrap"><h1 class="gold-text">GOLDEN HOUR</h1><i class="glint g1"></i><i class="glint g2"></i><i class="glint g3"></i><span class="flare"></span></div>
       <p class="tag">every film has its light</p>
     </div>
+    <span class="tc" id="tc">00:00:00:00</span><span class="pct" id="pct">0%</span>
   </div>
-  <div class="cine top"></div><div class="cine bottom"></div>
   <div class="reelbar"><i></i></div>
-  <small class="skip">tap anywhere to skip</small>
+  <small class="skip">click anywhere to skip</small>
 </div>
 
 <header class="nav" id="nav">
-  <a class="logo" href="#"><img src="logo.svg" alt="" onerror="this.remove()"><span class="gold-text">GOLDEN HOUR</span></a>
+  <a class="logo" href="#"><img src="logo.svg" alt=""><span class="gold-text">GOLDEN HOUR</span></a>
   <input id="search" type="search" placeholder="Search any movie   ( / )" aria-label="Search movies">
   <button id="surprise" class="primary">Surprise me</button>
   <button id="vaultBtn">My vault <b id="vaultCount">0</b></button>
@@ -51,39 +53,52 @@
 
 <main class="browse">
   <div id="rails"></div>
-  <section class="panel">
-    <div class="phead"><h2 class="gold-text">How are you feeling tonight?</h2><button id="quizBtn" class="primary">Find my film in 3 questions</button></div>
-    <div id="moods" class="chips moods"></div>
-    <div class="filters">
-      <label>Time machine
-        <select id="era"></select></label>
-      <label>Time you have
-        <select id="runtime">
-          <option value="">Any length</option>
-          <option value="lte100">Under 100 min</option>
-          <option value="lte130">Under 2h 10m</option>
-          <option value="gte150">Epic, 2h 30m+</option>
-        </select></label>
-      <label>Language
-        <select id="lang">
-          <option value="">Any language</option><option value="ta">Tamil</option><option value="hi">Hindi</option>
-          <option value="te">Telugu</option><option value="ml">Malayalam</option><option value="kn">Kannada</option>
-          <option value="en">English</option><option value="ko">Korean</option><option value="ja">Japanese</option>
-          <option value="fr">French</option><option value="es">Spanish</option>
-        </select></label>
-      <label>Minimum rating: <b id="minrv">Any</b>
-        <input type="range" id="minr" min="0" max="9" step="1" value="0"></label>
-      <label>Sort by
-        <select id="sort">
-          <option value="popularity.desc">Most popular</option>
-          <option value="vote_average.desc">Top rated</option>
-          <option value="primary_release_date.desc">Newest</option>
-          <option value="revenue.desc">Biggest box office</option>
-        </select></label>
-    </div>
-  </section>
 
-  <div id="genres" class="chips"></div>
+  <details class="panel" open>
+    <summary><span class="gold-text">Find your film</span><small>filters</small></summary>
+    <div class="pbody">
+      <div class="prow"><h3 class="ph" style="margin:0">How are you feeling tonight?</h3><button id="quizBtn" class="primary">3-question quiz</button></div>
+      <div id="moods" class="chips moods"></div>
+
+      <h3 class="ph">Genres <span id="gmode" class="seg"></span></h3>
+      <div id="genres" class="chips"></div>
+
+      <h3 class="ph">Time machine</h3>
+      <div id="eras" class="chips"></div>
+
+      <div class="filters">
+        <label>From year <select id="yf"></select></label>
+        <label>To year <select id="yt"></select></label>
+        <label>Length
+          <select id="runtime">
+            <option value="">Any length</option><option value="lte90">Under 90 min</option><option value="lte120">Under 2 hours</option>
+            <option value="gte120">Over 2 hours</option><option value="gte150">Epic, 2h 30m+</option>
+          </select></label>
+        <label>Language
+          <select id="lang">
+            <option value="">Any language</option><option value="ta">Tamil</option><option value="hi">Hindi</option>
+            <option value="te">Telugu</option><option value="ml">Malayalam</option><option value="kn">Kannada</option>
+            <option value="bn">Bengali</option><option value="mr">Marathi</option><option value="en">English</option>
+            <option value="ko">Korean</option><option value="ja">Japanese</option><option value="zh">Chinese</option>
+            <option value="fr">French</option><option value="es">Spanish</option><option value="de">German</option>
+            <option value="it">Italian</option><option value="th">Thai</option><option value="tr">Turkish</option>
+          </select></label>
+        <label>Minimum rating: <b id="minrv">Any</b>
+          <input type="range" id="minr" min="0" max="9" step="0.5" value="0"></label>
+        <label>Sort by
+          <select id="sort">
+            <option value="popularity.desc">Most popular</option><option value="vote_average.desc">Top rated</option>
+            <option value="vote_count.desc">Most voted</option><option value="primary_release_date.desc">Newest first</option>
+            <option value="primary_release_date.asc">Oldest first</option><option value="revenue.desc">Biggest box office</option>
+            <option value="original_title.asc">Title A to Z</option>
+          </select></label>
+        <label class="chk"><input type="checkbox" id="obscure"> Include obscure films</label>
+      </div>
+
+      <div id="active" class="active"></div>
+    </div>
+  </details>
+
   <div class="bar"><h2 id="heading" class="gold-text">Popular right now</h2><small id="count"></small></div>
   <div id="grid" class="grid"></div>
   <div id="sentinel" class="sentinel">Loading more films…</div>

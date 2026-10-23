@@ -8,19 +8,20 @@ const api = (path, params = {}) =>
   fetch(`${API}${path}?${new URLSearchParams({ api_key: KEY, language: "en-US", ...params })}`)
     .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
 
+/* Moods are presets: they fill in the filters below, which you can then tweak */
 const MOODS = [
-  { id: "cozy", name: "Cozy night in", g: "35|10751|16", min: 6.8 },
-  { id: "mind", name: "Mind-bending", g: "878|9648", min: 7 },
-  { id: "edge", name: "Edge of my seat", g: "53|28", min: 6.8 },
-  { id: "cry", name: "Cry it out", g: "18|10749", min: 7.5 },
-  { id: "date", name: "Date night", g: "10749|35", min: 6.8 },
-  { id: "epic", name: "Epic escape", g: "12|14|878", min: 7 },
-  { id: "spooky", name: "Spooky hours", g: "27|9648", min: 6.2 },
-  { id: "laugh", name: "Laugh out loud", g: "35", min: 6.8 }
+  { id: "cozy", name: "Cozy night in", g: ["35", "10751", "16"], mode: "any", min: 6.5 },
+  { id: "mind", name: "Mind-bending", g: ["878", "9648"], mode: "any", min: 7 },
+  { id: "edge", name: "Edge of my seat", g: ["53", "28"], mode: "any", min: 6.5 },
+  { id: "cry", name: "Cry it out", g: ["18", "10749"], mode: "all", min: 7 },
+  { id: "date", name: "Date night", g: ["10749", "35"], mode: "any", min: 6.5 },
+  { id: "epic", name: "Epic escape", g: ["12", "14", "878"], mode: "any", min: 6.5 },
+  { id: "spooky", name: "Spooky hours", g: ["27", "9648"], mode: "any", min: 6 },
+  { id: "laugh", name: "Laugh out loud", g: ["35"], mode: "any", min: 6.5 }
 ];
-const ERAS = [["", "Any era"], ["2020", "The 2020s"], ["2010", "The 2010s"], ["2000", "The 2000s"], ["1990", "The 1990s"], ["1980", "The 1980s"], ["1970", "The 1970s"], ["1960", "The 1960s"], ["1950", "The 1950s"]];
+const ERAS = [["", "", "Any era"], ["2020", "2029", "2020s"], ["2010", "2019", "2010s"], ["2000", "2009", "2000s"], ["1990", "1999", "1990s"], ["1980", "1989", "1980s"], ["1970", "1979", "1970s"], ["1960", "1969", "1960s"], ["", "1959", "Classics"]];
 
-const state = { genre: "", mood: "", era: "", rt: "", lang: "", minr: 0, sort: "popularity.desc", q: "", page: 1, total: 1, loading: false, hero: 0 };
+const state = { genres: [], gmode: "any", yf: "", yt: "", rt: "", lang: "", minr: 0, obscure: false, mood: "", sort: "popularity.desc", q: "", page: 1, total: 1, tr: 0, loading: false, hero: 0 };
 const GENRES = new Map(), cache = new Map();
 let heroList = [], heroTimer, cardIndex = 0, token = 0;
 let vault = []; try { vault = JSON.parse(localStorage.getItem("gh_vault") || "[]"); } catch (e) {}
@@ -28,6 +29,7 @@ let vault = []; try { vault = JSON.parse(localStorage.getItem("gh_vault") || "[]
 /* ---------- small effects ---------- */
 addEventListener("scroll", () => {
   $("#nav").classList.toggle("solid", scrollY > 60);
+  $("#toTop").classList.toggle("show", scrollY > 800);
   const max = document.documentElement.scrollHeight - innerHeight;
   $("#progress").style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
 });
@@ -35,23 +37,23 @@ addEventListener("pointermove", e => { if (e.pointerType === "mouse") $("#glow")
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), 1800); }
 const remember = m => cache.set(m.id, { id: m.id, title: m.title, poster_path: m.poster_path, vote_average: m.vote_average || 0, release_date: m.release_date });
 const year = m => (m.release_date || "").slice(0, 4) || "TBA";
+const pimg = (m, w = "w342") => m.poster_path ? `<img loading="lazy" src="${IMG}${w}${m.poster_path}" alt="${esc(m.title)}">` : `<div class="noposter"><span>${esc(m.title)}</span></div>`;
 
-/* ---------- vault (watchlist) ---------- */
+/* ---------- vault ---------- */
 const inVault = id => vault.some(v => v.id == id);
 function syncVault() {
   try { localStorage.setItem("gh_vault", JSON.stringify(vault)); } catch (e) {}
   $("#vaultCount").textContent = vault.length;
   $$("[data-save]").forEach(b => b.classList.toggle("on", inVault(b.dataset.save)));
-  $("#vault").innerHTML = `<div class="vhead"><div><h3 class="gold-text">My vault</h3><small class="muted">${vault.length ? `${vault.length} films, avg ★ ${(vault.reduce((a, v) => a + v.vote_average, 0) / vault.length).toFixed(1)}` : ""}</small></div><button data-vclose>Close</button></div>` +
-    (vault.length ? `<div class="vgrid">${vault.map(v => `<div class="vitem"><button class="open" data-open="${v.id}">
-        <div class="pw">${v.poster_path ? `<img src="${IMG}w185${v.poster_path}" alt="${esc(v.title)}">` : ""}</div><span>${esc(v.title)}</span></button>
+  const avg = vault.length ? (vault.reduce((a, v) => a + v.vote_average, 0) / vault.length).toFixed(1) : "";
+  $("#vault").innerHTML = `<div class="vhead"><div><h3 class="gold-text">My vault</h3><small class="muted">${vault.length ? `${vault.length} films, avg ★ ${avg}` : ""}</small></div><button data-vclose>Close</button></div>` +
+    (vault.length ? `<div class="vgrid">${vault.map(v => `<div class="vitem"><button class="open" data-open="${v.id}"><div class="pw">${pimg(v, "w185")}</div><span>${esc(v.title)}</span></button>
         <button class="x" data-save="${v.id}" aria-label="Remove">✕</button></div>`).join("")}</div>`
       : `<p class="empty">Nothing saved yet. Tap the heart on any film to keep it here.</p>`);
 }
 function toggleVault(id) {
   const m = cache.get(+id); if (!m) return;
-  if (inVault(id)) { vault = vault.filter(v => v.id != id); toast("Removed from your vault"); }
-  else { vault.unshift(m); toast("Saved to your vault"); }
+  if (inVault(id)) { vault = vault.filter(v => v.id != id); toast("Removed from your vault"); } else { vault.unshift(m); toast("Saved to your vault"); }
   syncVault();
 }
 
@@ -84,80 +86,128 @@ function showHero(i) {
 }
 
 /* ---------- filters ---------- */
-async function loadGenres() {
-  try {
-    const d = await api("/genre/movie/list");
-    (d.genres || []).forEach(g => GENRES.set(String(g.id), g.name));
-  } catch (e) {}
-  drawChips();
-}
-function drawChips() {
-  $("#moods").innerHTML = MOODS.map(m => `<button class="${state.mood === m.id ? "on" : ""}" data-mood="${m.id}">${m.name}</button>`).join("");
-  $("#genres").innerHTML = [["", "All genres"], ...GENRES].map(([id, n]) => `<button class="${!state.mood && state.genre === id ? "on" : ""}" data-genre="${id}">${n}</button>`).join("");
-}
-$("#era").innerHTML = ERAS.map(([v, n]) => `<option value="${v}">${n}</option>`).join("");
+const YEARS = []; for (let y = new Date().getFullYear() + 1; y >= 1900; y--) YEARS.push(y);
+["#yf", "#yt"].forEach(s => $(s).innerHTML = `<option value="">Any</option>` + YEARS.map(y => `<option>${y}</option>`).join(""));
 
+const eraText = () => state.yf && state.yt ? (state.yf === state.yt ? state.yf : `${state.yf} to ${state.yt}`) : state.yf ? `since ${state.yf}` : state.yt ? `up to ${state.yt}` : "";
+const selText = id => $(id).selectedOptions[0].text;
+
+function renderFilters() {
+  $("#moods").innerHTML = MOODS.map(m => `<button class="${state.mood === m.id ? "on" : ""}" data-mood="${m.id}">${m.name}</button>`).join("");
+  $("#genres").innerHTML = [...GENRES].map(([id, n]) => `<button class="${state.genres.includes(id) ? "on" : ""}" data-genre="${id}">${n}</button>`).join("");
+  $("#gmode").innerHTML = [["any", "Match any"], ["all", "Match all"]].map(([v, n]) => `<button class="${state.gmode === v ? "on" : ""}" data-gmode="${v}">${n}</button>`).join("");
+  $("#eras").innerHTML = ERAS.map(([a, b, n]) => `<button class="${state.yf === a && state.yt === b ? "on" : ""}" data-era="${a}|${b}">${n}</button>`).join("");
+  $("#yf").value = state.yf; $("#yt").value = state.yt; $("#runtime").value = state.rt; $("#lang").value = state.lang;
+  $("#sort").value = state.sort; $("#minr").value = state.minr; $("#minrv").textContent = state.minr || "Any"; $("#obscure").checked = state.obscure;
+
+  const act = [];
+  if (state.mood) act.push(["mood", MOODS.find(m => m.id === state.mood).name]);
+  state.genres.forEach(g => act.push(["genre:" + g, GENRES.get(g) || g]));
+  if (state.yf || state.yt) act.push(["era", eraText()]);
+  if (state.rt) act.push(["rt", selText("#runtime")]);
+  if (state.lang) act.push(["lang", selText("#lang")]);
+  if (state.minr) act.push(["minr", `★ ${state.minr}+`]);
+  if (state.obscure) act.push(["obscure", "Incl. obscure"]);
+  $("#active").innerHTML = act.length
+    ? act.map(([k, n]) => `<button class="tag" data-clear="${k}">${n} <b>✕</b></button>`).join("") + `<button class="tag clear" data-clearall>Clear all</button>`
+    : `<span class="muted">No filters on. You're seeing every film.</span>`;
+}
+function setMood(id) { const m = MOODS.find(x => x.id === id); state.mood = id; state.genres = [...m.g]; state.gmode = m.mode; state.minr = m.min; }
+function clearKey(k) {
+  if (k === "mood") Object.assign(state, { mood: "", genres: [], gmode: "any", minr: 0 });
+  else if (k.startsWith("genre:")) { state.genres = state.genres.filter(g => g !== k.slice(6)); state.mood = ""; }
+  else if (k === "era") state.yf = state.yt = "";
+  else if (k === "rt") state.rt = ""; else if (k === "lang") state.lang = "";
+  else if (k === "minr") { state.minr = 0; state.mood = ""; } else if (k === "obscure") state.obscure = false;
+}
+function apply() { renderFilters(); loadMore(true); }
+
+async function loadGenres() {
+  try { (await api("/genre/movie/list")).genres.forEach(g => GENRES.set(String(g.id), g.name)); } catch (e) {}
+  renderFilters();
+}
+
+// Discover query built from every active filter
 function params(page) {
-  const p = { page, sort_by: state.sort, include_adult: "false", "vote_count.gte": 40 };
-  const m = MOODS.find(x => x.id === state.mood);
-  const g = m ? m.g : state.genre; if (g) p.with_genres = g;
-  if (m) { p["vote_average.gte"] = m.min; p["vote_count.gte"] = 300; }
-  if (state.sort === "vote_average.desc") p["vote_count.gte"] = 500;
+  const p = { page, sort_by: state.sort, include_adult: "false" };
+  if (state.genres.length) p.with_genres = state.genres.join(state.gmode === "all" ? "," : "|");
   const today = new Date().toISOString().slice(0, 10);
-  if (state.era) { p["primary_release_date.gte"] = `${state.era}-01-01`; p["primary_release_date.lte"] = `${+state.era + 9}-12-31`; }
-  else if (state.sort === "primary_release_date.desc") p["primary_release_date.lte"] = today;
+  if (state.yf) p["primary_release_date.gte"] = `${state.yf}-01-01`;
+  if (state.yt) p["primary_release_date.lte"] = `${state.yt}-12-31`;
+  else if (state.sort.startsWith("primary_release_date")) p["primary_release_date.lte"] = today;
   if (state.rt) p[`with_runtime.${state.rt.slice(0, 3)}`] = state.rt.slice(3);
   if (state.lang) p.with_original_language = state.lang;
-  if (state.minr > 0) p["vote_average.gte"] = Math.max(+p["vote_average.gte"] || 0, state.minr);
+  if (state.minr > 0) p["vote_average.gte"] = state.minr;
+  const votes = ["vote_average.desc"].includes(state.sort) ? (state.obscure ? 50 : 300) : state.obscure ? 0 : 20;
+  if (votes) p["vote_count.gte"] = votes;
   return p;
 }
+// Search can't filter server-side, so apply the same filters to search results here
+function passes(m) {
+  const ids = (m.genre_ids || []).map(String);
+  if (state.genres.length && !(state.gmode === "all" ? state.genres.every(g => ids.includes(g)) : state.genres.some(g => ids.includes(g)))) return false;
+  if (state.minr && m.vote_average < state.minr) return false;
+  const y = +(m.release_date || "").slice(0, 4);
+  if (state.yf && (!y || y < +state.yf)) return false;
+  if (state.yt && (!y || y > +state.yt)) return false;
+  if (state.lang && m.original_language !== state.lang) return false;
+  return true;
+}
 function setHeading() {
-  const m = MOODS.find(x => x.id === state.mood), era = ERAS.find(e => e[0] === state.era);
-  let t = state.q ? `Results for "${state.q}"` : m ? m.name : state.genre ? `${GENRES.get(state.genre)} films` : "Popular right now";
-  if (!state.q && state.era) t = (m || state.genre ? t : "Films") + ` from the ${era[1].replace("The ", "")}`;
-  if (!state.q && state.lang) t += ` in ${$("#lang").selectedOptions[0].text}`;
+  if (state.q) return $("#heading").textContent = `Results for "${state.q}"`;
+  const g = state.genres.map(i => GENRES.get(i)).filter(Boolean);
+  let t = state.mood ? MOODS.find(m => m.id === state.mood).name : g.length ? g.join(state.gmode === "all" ? " & " : " or ") + " films" : state.yf || state.yt || state.lang || state.rt || state.minr ? "Films" : "Popular right now";
+  if (eraText()) t += `, ${eraText()}`;
+  if (state.lang) t += ` in ${selText("#lang")}`;
   $("#heading").textContent = t;
 }
 
 /* ---------- grid + infinite scroll ---------- */
 async function loadMore(reset = false) {
-  if (reset) { token++; state.loading = false; state.page = 1; state.total = 1; cardIndex = 0; $("#grid").innerHTML = ""; $("#count").textContent = ""; setHeading(); }
+  const grid = $("#grid");
+  if (reset) { token++; state.loading = false; state.page = 1; state.total = 1; cardIndex = 0; grid.innerHTML = ""; $("#count").textContent = ""; setHeading(); }
   if (state.loading || state.page > state.total) return;
   state.loading = true; const mine = token;
-  let d;
-  try { d = state.q ? await api("/search/movie", { query: state.q, page: state.page }) : await api("/discover/movie", params(state.page)); }
-  catch (e) { state.loading = false; $("#sentinel").textContent = "Couldn't reach the movie database. Check your API key and connection."; return; }
-  if (mine !== token) return;
-  state.total = Math.min(d.total_pages || 1, 500); state.page++;
-  const list = (d.results || []).filter(m => m.poster_path);
-  list.forEach(remember);
-  $("#grid").insertAdjacentHTML("beforeend", list.map(card).join(""));
+  let added = 0, tries = 0;
+  try {
+    do {
+      const d = state.q ? await api("/search/movie", { query: state.q, page: state.page, include_adult: "false" }) : await api("/discover/movie", params(state.page));
+      if (mine !== token) return;
+      state.total = Math.min(d.total_pages || 1, 500); state.page++; state.tr = d.total_results || 0;
+      let list = d.results || []; if (state.q) list = list.filter(passes);
+      list.forEach(remember);
+      grid.insertAdjacentHTML("beforeend", list.map(card).join(""));
+      added += list.length; tries++;
+    } while (state.q && added < 12 && state.page <= state.total && tries < 6);
+  } catch (e) { state.loading = false; $("#sentinel").textContent = "Couldn't reach the movie database. Check your API key and connection."; return; }
   $$(".card:not(.seen)").forEach(c => { c.classList.add("seen"); reveal.observe(c); });
-  if (d.total_results != null) $("#count").textContent = `${d.total_results.toLocaleString()} films`;
-  $("#sentinel").textContent = !$("#grid").children.length ? "No films match. Try loosening a filter." : state.page > state.total ? "That's every film we could find ✦" : "Loading more films…";
+  if (!state.q) $("#count").textContent = `${state.tr.toLocaleString()} films`;
+  $("#sentinel").textContent = !grid.children.length ? "No films match these filters. Try removing one above."
+    : state.page > state.total ? (state.tr > 10000 && !state.q ? `Showing the first 10,000 of ${state.tr.toLocaleString()}. Narrow by year, genre or language to see the rest.` : "That's every film we could find ✦")
+    : "Loading more films…";
   state.loading = false;
 }
 const card = m => `
   <article class="card" style="--i:${cardIndex++ % 8}">
     <button class="open" data-open="${m.id}">
-      <div class="pw"><span class="rate">★ ${m.vote_average.toFixed(1)}</span><img loading="lazy" src="${IMG}w342${m.poster_path}" alt="${esc(m.title)}"></div>
+      <div class="pw"><span class="rate">★ ${(m.vote_average || 0).toFixed(1)}</span>${pimg(m)}</div>
       <h3>${esc(m.title)}</h3><small>${year(m)}</small>
     </button>
     <button class="save ${inVault(m.id) ? "on" : ""}" data-save="${m.id}" aria-label="Save to vault"><span class="h"></span></button>
   </article>`;
 const reveal = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); reveal.unobserve(e.target); } }), { threshold: .1 });
-new IntersectionObserver(es => { if (es[0].isIntersecting) loadMore(); }, { rootMargin: "600px" }).observe($("#sentinel"));
+new IntersectionObserver(es => { if (es[0].isIntersecting) loadMore(); }, { rootMargin: "700px" }).observe($("#sentinel"));
 
 // 3D tilt + shine that follows the mouse
-const grid = $("#grid");
-grid.addEventListener("pointermove", e => {
+const gridEl = $("#grid");
+gridEl.addEventListener("pointermove", e => {
   if (e.pointerType !== "mouse") return;
   const pw = e.target.closest(".pw"); if (!pw) return;
   const r = pw.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
   pw.style.setProperty("--rx", ((.5 - y) * 14) + "deg"); pw.style.setProperty("--ry", ((x - .5) * 14) + "deg");
   pw.style.setProperty("--gx", x * 100 + "%"); pw.style.setProperty("--gy", y * 100 + "%");
 });
-grid.addEventListener("pointerout", e => { const pw = e.target.closest?.(".pw"); if (pw) ["--rx", "--ry"].forEach(v => pw.style.removeProperty(v)); });
+gridEl.addEventListener("pointerout", e => { const pw = e.target.closest?.(".pw"); if (pw) ["--rx", "--ry"].forEach(v => pw.style.removeProperty(v)); });
 
 /* ---------- movie popup ---------- */
 async function openMovie(id) {
@@ -192,22 +242,21 @@ async function openMovie(id) {
       <div class="provs">${stream.length ? stream.map(p => `<img src="${IMG}w92${p.logo_path}" alt="${esc(p.provider_name)}" title="${esc(p.provider_name)}">`).join("") : `<span class="muted">Not streaming here right now.</span>`}
         ${rent.length ? `<small class="muted">Rent or buy: ${[...new Set(rent.map(p => esc(p.provider_name)))].slice(0, 4).join(", ")}</small>` : ""}</div>
       ${cast.length ? `<h4>Cast</h4><div class="cast">${cast.map(c => `<div><img loading="lazy" src="${IMG}w185${c.profile_path}" alt=""><b>${esc(c.name)}</b><small>${esc(c.character)}</small></div>`).join("")}</div>` : ""}
-      ${more.length ? `<h4>If you liked this</h4><div class="similar">${more.map(r => `<button class="open" data-open="${r.id}"><div class="pw"><img loading="lazy" src="${IMG}w185${r.poster_path}" alt="${esc(r.title)}"></div><span>${esc(r.title)}</span></button>`).join("")}</div>` : ""}
+      ${more.length ? `<h4>If you liked this</h4><div class="similar">${more.map(r => `<button class="open" data-open="${r.id}"><div class="pw">${pimg(r, "w185")}</div><span>${esc(r.title)}</span></button>`).join("")}</div>` : ""}
     </div>`;
 }
 $("#modal").addEventListener("close", () => $("#modal").innerHTML = "");
 
-/* ---------- surprise roulette ---------- */
+/* ---------- surprise roulette (respects your filters) ---------- */
 async function surprise() {
-  const ov = $("#roulette");
-  ov.className = "roulette show";
+  const ov = $("#roulette"); ov.className = "roulette show";
   ov.innerHTML = `<div class="rwrap"><p class="gold-text">Finding your film…</p><div class="reel"><img id="rimg" alt=""></div><h3 id="rname"></h3></div>`;
   let pool = [];
   try {
-    const d = await api("/discover/movie", { ...params(1 + Math.floor(Math.random() * 5)), "vote_count.gte": 300 });
+    const d = await api("/discover/movie", { ...params(1 + Math.floor(Math.random() * 5)), "vote_count.gte": 200 });
     pool = (d.results || []).filter(m => m.poster_path);
   } catch (e) {}
-  if (!pool.length) { ov.className = "roulette"; return toast("Couldn't pick one. Check your API key."); }
+  if (!pool.length) { ov.className = "roulette"; return toast("No match found. Try loosening a filter."); }
   const win = pool[Math.floor(Math.random() * pool.length)], img = $("#rimg");
   let i = 0, delay = 70;
   (function step() {
@@ -218,39 +267,6 @@ async function surprise() {
     setTimeout(() => { ov.className = "roulette"; openMovie(win.id); }, 1100);
   })();
 }
-
-/* ---------- events ---------- */
-document.addEventListener("click", e => {
-  const t = e.target, q = s => t.closest(s);
-  if (q("[data-rdir]")) { const b = q("[data-rdir]"); return $("#rail-" + b.dataset.rid).scrollBy({ left: b.dataset.rdir * innerWidth * .7, behavior: "smooth" }); }
-  if (q("[data-save]")) return toggleVault(q("[data-save]").dataset.save);
-  if (q("[data-open]")) { $("#vault").classList.remove("open"); return openMovie(q("[data-open]").dataset.open); }
-  if (q("[data-dot]")) return showHero(+q("[data-dot]").dataset.dot);
-  if (q("[data-play]")) return $("#mtop").innerHTML = `<iframe src="https://www.youtube.com/embed/${q("[data-play]").dataset.play}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-  if (q("[data-copy]")) { navigator.clipboard?.writeText(q("[data-copy]").dataset.copy); return toast("Title copied"); }
-  if (q("[data-close]") || t.id === "modal") return $("#modal").close();
-  if (q("[data-mood]")) { const id = q("[data-mood]").dataset.mood; state.mood = state.mood === id ? "" : id; state.genre = ""; return refilter(); }
-  if (q("[data-genre]") !== null && q("[data-genre]")) { state.genre = q("[data-genre]").dataset.genre; state.mood = ""; return refilter(); }
-  if (q("[data-vclose]")) $("#vault").classList.remove("open");
-  if (t.closest("#roulette") && !t.closest(".rwrap")) $("#roulette").className = "roulette";
-});
-function refilter() { state.q = ""; $("#search").value = ""; drawChips(); loadMore(true); }
-$("#era").onchange = e => { state.era = e.target.value; refilter(); };
-$("#runtime").onchange = e => { state.rt = e.target.value; refilter(); };
-$("#sort").onchange = e => { state.sort = e.target.value; refilter(); };
-$("#vaultBtn").onclick = () => $("#vault").classList.toggle("open");
-$("#surprise").onclick = surprise;
-$("#quizBtn").onclick = () => quiz();
-$("#lang").onchange = e => { state.lang = e.target.value; refilter(); };
-$("#minr").oninput = e => { state.minr = +e.target.value; $("#minrv").textContent = state.minr || "Any"; clearTimeout(window._mr); window._mr = setTimeout(refilter, 300); };
-$("#toTop").onclick = () => scrollTo({ top: 0, behavior: "smooth" });
-addEventListener("scroll", () => $("#toTop").classList.toggle("show", scrollY > 800));
-let debounce;
-$("#search").oninput = e => { clearTimeout(debounce); debounce = setTimeout(() => { state.q = e.target.value.trim(); loadMore(true); }, 400); };
-document.addEventListener("keydown", e => {
-  if (e.key === "/" && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); $("#search").focus(); }
-  if (e.key === "Escape") { $("#vault").classList.remove("open"); $("#roulette").className = "roulette"; $("#quiz").className = "roulette"; }
-});
 
 /* ---------- rails: Top 10, in theatres, coming soon ---------- */
 const RAILS = [{ id: "top", title: "Top 10 this week", top: true }, { id: "now", title: "In theatres now", path: "/movie/now_playing", p: { region: REGION } }, { id: "soon", title: "Coming soon", path: "/movie/upcoming", p: { region: REGION } }];
@@ -264,7 +280,7 @@ async function loadRails(trend) {
     const row = $("#rail-" + r.id);
     if (!list.length) { row.closest(".rail").remove(); continue; }
     row.innerHTML = list.map((m, i) => `<div class="ritem">${r.top ? `<i class="num">${i + 1}</i>` : ""}
-      <button class="open" data-open="${m.id}"><div class="pw"><span class="rate">★ ${m.vote_average.toFixed(1)}</span><img loading="lazy" src="${IMG}w342${m.poster_path}" alt="${esc(m.title)}"></div>${r.top ? "" : `<small>${esc(m.title)}</small>`}</button>
+      <button class="open" data-open="${m.id}"><div class="pw"><span class="rate">★ ${m.vote_average.toFixed(1)}</span>${pimg(m)}</div>${r.top ? "" : `<small>${esc(m.title)}</small>`}</button>
       <button class="save ${inVault(m.id) ? "on" : ""}" data-save="${m.id}" aria-label="Save to vault"><span class="h"></span></button></div>`).join("");
   }
 }
@@ -272,10 +288,9 @@ async function loadRails(trend) {
 /* ---------- 3-question quiz ---------- */
 const QUIZ = [
   { q: "What's the vibe tonight?", key: "mood", opts: MOODS.map(m => [m.id, m.name]) },
-  { q: "How long do you have?", key: "rt", opts: [["lte100", "Under 100 min"], ["lte130", "About two hours"], ["gte150", "All night, epic"], ["", "No limit"]] },
-  { q: "Which era feels right?", key: "era", opts: [["2020", "Brand new"], ["2010", "The 2010s"], ["2000", "The 2000s"], ["1990", "Classics, 90s"], ["", "Surprise me"]] }
+  { q: "How long do you have?", key: "rt", opts: [["lte120", "Under 2 hours"], ["gte120", "Over 2 hours"], ["gte150", "All night, epic"], ["", "No limit"]] },
+  { q: "Which era feels right?", key: "era", opts: [["2020|2029", "Brand new"], ["2010|2019", "The 2010s"], ["2000|2009", "The 2000s"], ["1990|1999", "Classics, 90s"], ["|", "Surprise me"]] }
 ];
-function syncFilterUI() { $("#era").value = state.era; $("#runtime").value = state.rt; $("#sort").value = state.sort; $("#lang").value = state.lang; $("#minr").value = state.minr; $("#minrv").textContent = state.minr || "Any"; }
 function quiz(step = 0, ans = {}) {
   const ov = $("#quiz"), s = QUIZ[step]; ov.className = "roulette show";
   ov.innerHTML = `<div class="rwrap qwrap"><small>Question ${step + 1} of 3</small><p class="gold-text">${s.q}</p><div class="qopts">${s.opts.map(([v, n]) => `<button data-qv="${esc(v)}">${n}</button>`).join("")}</div></div>`;
@@ -284,8 +299,8 @@ function quiz(step = 0, ans = {}) {
     if (!b) { if (!e.target.closest(".qwrap")) ov.className = "roulette"; return; }
     ans = { ...ans, [s.key]: b.dataset.qv };
     if (step < 2) return quiz(step + 1, ans);
-    Object.assign(state, { mood: ans.mood, rt: ans.rt, era: ans.era, genre: "", q: "" });
-    $("#search").value = ""; syncFilterUI(); drawChips(); ov.className = "roulette"; loadMore(true); setTimeout(surprise, 250);
+    setMood(ans.mood); state.rt = ans.rt; [state.yf, state.yt] = ans.era.split("|"); state.q = ""; $("#search").value = "";
+    ov.className = "roulette"; apply(); setTimeout(surprise, 250);
   };
 }
 
@@ -299,5 +314,47 @@ addEventListener("pointermove", e => {
   document.body.appendChild(s); setTimeout(() => s.remove(), 900);
 });
 
+/* ---------- events ---------- */
+document.addEventListener("click", e => {
+  const t = e.target, q = s => t.closest(s);
+  if (q("[data-rdir]")) { const b = q("[data-rdir]"); return $("#rail-" + b.dataset.rid).scrollBy({ left: b.dataset.rdir * innerWidth * .7, behavior: "smooth" }); }
+  if (q("[data-save]")) return toggleVault(q("[data-save]").dataset.save);
+  if (q("[data-open]")) { $("#vault").classList.remove("open"); return openMovie(q("[data-open]").dataset.open); }
+  if (q("[data-dot]")) return showHero(+q("[data-dot]").dataset.dot);
+  if (q("[data-play]")) return $("#mtop").innerHTML = `<iframe src="https://www.youtube.com/embed/${q("[data-play]").dataset.play}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+  if (q("[data-copy]")) { navigator.clipboard?.writeText(q("[data-copy]").dataset.copy); return toast("Title copied"); }
+  if (q("[data-close]") || t.id === "modal") return $("#modal").close();
+  if (q("[data-mood]")) { const id = q("[data-mood]").dataset.mood; state.mood === id ? clearKey("mood") : setMood(id); return apply(); }
+  if (q("[data-genre]")) { const g = q("[data-genre]").dataset.genre; state.genres = state.genres.includes(g) ? state.genres.filter(x => x !== g) : [...state.genres, g]; state.mood = ""; return apply(); }
+  if (q("[data-gmode]")) { state.gmode = q("[data-gmode]").dataset.gmode; state.mood = ""; return apply(); }
+  if (q("[data-era]")) { [state.yf, state.yt] = q("[data-era]").dataset.era.split("|"); return apply(); }
+  if (q("[data-clearall]")) { Object.assign(state, { genres: [], gmode: "any", yf: "", yt: "", rt: "", lang: "", minr: 0, obscure: false, mood: "" }); return apply(); }
+  if (q("[data-clear]")) { clearKey(q("[data-clear]").dataset.clear); return apply(); }
+  if (q("[data-vclose]")) $("#vault").classList.remove("open");
+  if (t.closest("#roulette") && !t.closest(".rwrap")) $("#roulette").className = "roulette";
+});
+const onChange = (sel, fn) => $(sel).addEventListener("change", e => { fn(e.target); apply(); });
+onChange("#yf", el => { state.yf = el.value; if (state.yt && state.yf > state.yt) state.yt = state.yf; });
+onChange("#yt", el => { state.yt = el.value; if (state.yf && state.yf > state.yt && state.yt) state.yf = state.yt; });
+onChange("#runtime", el => state.rt = el.value);
+onChange("#lang", el => state.lang = el.value);
+onChange("#sort", el => state.sort = el.value);
+onChange("#obscure", el => state.obscure = el.checked);
+let sliderT;
+$("#minr").addEventListener("input", e => {
+  state.minr = +e.target.value; state.mood = ""; $("#minrv").textContent = state.minr || "Any";
+  clearTimeout(sliderT); sliderT = setTimeout(apply, 300);
+});
+$("#vaultBtn").onclick = () => $("#vault").classList.toggle("open");
+$("#surprise").onclick = surprise;
+$("#quizBtn").onclick = () => quiz();
+$("#toTop").onclick = () => scrollTo({ top: 0, behavior: "smooth" });
+let debounce;
+$("#search").oninput = e => { clearTimeout(debounce); debounce = setTimeout(() => { state.q = e.target.value.trim(); loadMore(true); }, 400); };
+document.addEventListener("keydown", e => {
+  if (e.key === "/" && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); $("#search").focus(); }
+  if (e.key === "Escape") { $("#vault").classList.remove("open"); $("#roulette").className = "roulette"; $("#quiz").className = "roulette"; }
+});
+
 /* ---------- start ---------- */
-syncVault(); drawChips(); loadHero(); loadGenres(); loadMore(true);
+syncVault(); renderFilters(); loadHero(); loadGenres(); loadMore(true);
