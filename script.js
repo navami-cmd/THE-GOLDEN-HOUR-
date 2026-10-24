@@ -1,6 +1,5 @@
 // 👇 PASTE YOUR TMDB API KEY (v3) HERE
 const KEY = "3ecb15e92ff4f2224b44b19eb3eb8648";
-
 const API = "https://api.themoviedb.org/3", IMG = "https://image.tmdb.org/t/p/", REGION = "IN"; // REGION = country for "where to watch"
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
