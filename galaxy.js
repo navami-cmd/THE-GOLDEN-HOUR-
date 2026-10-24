@@ -12,7 +12,7 @@
     gr.addColorStop(0, `rgba(${r},${g},${b},1)`); gr.addColorStop(.3, `rgba(${r},${g},${b},.4)`); gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
     q.fillStyle = gr; q.fillRect(0, 0, 128, 128); return s;
   };
-  const S = { gold: sprite(236, 214, 164), pale: sprite(250, 242, 222), amber: sprite(196, 160, 96), deep: sprite(116, 90, 48) };
+  const S = { gold: sprite(200, 171, 120), pale: sprite(237, 231, 221), amber: sprite(152, 124, 82), deep: sprite(83, 69, 48) };
   const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
 
   function setup() {
@@ -36,31 +36,31 @@
     neb = [[.15, .25, 1.1, "amber"], [.85, .75, 1.3, "deep"], [.5, .9, 1, "amber"], [.7, .1, .9, "deep"], [.3, .6, .8, "gold"]]
       .map(([nx, ny, sc, k], i) => ({ nx, ny, sc, k, ph: i * 1.7 }));
   }
-  const col = ["#fbf5e4", "#ecdcb0", "#bfa066"];
+  const col = ["#efeae2", "#c9b081", "#947c56"];
 
   function frame(now) {
     const dt = Math.min(48, now - last || 16); last = now; t += dt;
     px += (mx - px) * .05; py += (my - py) * .05;
-    x.globalCompositeOperation = "source-over"; x.fillStyle = "#040302"; x.fillRect(0, 0, w, h);
+    x.globalCompositeOperation = "source-over"; x.fillStyle = "#030202"; x.fillRect(0, 0, w, h);
     x.globalCompositeOperation = "lighter";
 
     // drifting nebula clouds
     neb.forEach(n => {
       const X = w * n.nx + Math.sin(t * .00008 + n.ph) * 120 - px * 40, Y = h * n.ny + Math.cos(t * .00006 + n.ph) * 90 - py * 40, d = Math.max(w, h) * .7 * n.sc;
-      x.globalAlpha = .13 + .05 * Math.sin(t * .0003 + n.ph); x.drawImage(S[n.k], X - d / 2, Y - d / 2, d, d);
+      x.globalAlpha = .085 + .035 * Math.sin(t * .0003 + n.ph); x.drawImage(S[n.k], X - d / 2, Y - d / 2, d, d);
     });
 
     // background stars with parallax + twinkle
     bg.forEach(s => {
       s.x -= .006 * s.z * dt; if (s.x < -2) s.x = w + 2;
       x.globalAlpha = .2 + .8 * Math.abs(Math.sin(t * .0012 * s.ts + s.tw));
-      x.fillStyle = "#f7ecd2"; x.fillRect(s.x - px * s.z * 30, s.y - py * s.z * 30, s.s, s.s);
+      x.fillStyle = "#e7e0d4"; x.fillRect(s.x - px * s.z * 30, s.y - py * s.z * 30, s.s, s.s);
     });
 
     // galaxy core glow
     const cg = R * .7, gx = cx - px * 18, gy = cy - py * 18;
-    x.globalAlpha = .55 + .1 * Math.sin(t * .0008); x.drawImage(S.pale, gx - cg * .35, gy - cg * .22, cg * .7, cg * .44);
-    x.globalAlpha = .45; x.drawImage(S.gold, gx - cg, gy - cg * .62, cg * 2, cg * 1.24);
+    x.globalAlpha = .38 + .08 * Math.sin(t * .0008); x.drawImage(S.pale, gx - cg * .35, gy - cg * .22, cg * .7, cg * .44);
+    x.globalAlpha = .3; x.drawImage(S.gold, gx - cg, gy - cg * .62, cg * 2, cg * 1.24);
 
     // spiral disk: differential rotation (inner spins faster)
     const phi = -.5 + Math.sin(t * .00004) * .05, cp = Math.cos(phi), sp = Math.sin(phi), sq = .46;
@@ -87,7 +87,7 @@
     shooters.forEach(s => {
       s.x += s.vx * dt / 16; s.y += s.vy * dt / 16; s.life -= .011;
       const g = x.createLinearGradient(s.x, s.y, s.x - s.vx * 16, s.y - s.vy * 16);
-      g.addColorStop(0, `rgba(250,242,218,${s.life})`); g.addColorStop(1, "rgba(240,222,170,0)");
+      g.addColorStop(0, `rgba(236,230,218,${s.life})`); g.addColorStop(1, "rgba(205,177,123,0)");
       x.globalAlpha = 1; x.strokeStyle = g; x.lineWidth = 2; x.beginPath(); x.moveTo(s.x, s.y); x.lineTo(s.x - s.vx * 16, s.y - s.vy * 16); x.stroke();
     });
     x.globalAlpha = 1;

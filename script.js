@@ -35,7 +35,7 @@ addEventListener("scroll", () => {
 });
 addEventListener("pointermove", e => { if (e.pointerType === "mouse") $("#glow").style.transform = `translate(${e.clientX}px,${e.clientY}px)`; });
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), 1800); }
-const remember = m => cache.set(m.id, { id: m.id, title: m.title, poster_path: m.poster_path, vote_average: m.vote_average || 0, release_date: m.release_date });
+const remember = m => cache.set(m.id, { id: m.id, title: m.title, poster_path: m.poster_path, vote_average: m.vote_average || 0, release_date: m.release_date, genre_ids: m.genre_ids || (m.genres || []).map(g => g.id) });
 const year = m => (m.release_date || "").slice(0, 4) || "TBA";
 const pimg = (m, w = "w342") => m.poster_path ? `<img loading="lazy" src="${IMG}${w}${m.poster_path}" alt="${esc(m.title)}">` : `<div class="noposter"><span>${esc(m.title)}</span></div>`;
 
@@ -47,6 +47,7 @@ function rgb2hsl(r, g, b) {
   if (d) { s = d / (1 - Math.abs(2 * l - 1)); h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; }
   return [h, s, l];
 }
+const fixH = h => (h > 42 && h < 75 ? 36 : h);   // keep yellows out: pull them to bronze
 function palette(path) {
   if (!path) return Promise.resolve(null);
   if (palCache.has(path)) return palCache.get(path);
@@ -62,7 +63,7 @@ function palette(path) {
           const w = s * (1 - Math.abs(l - .5) * 1.4), b = Math.floor(h / 10) % 36; wt[b] += w; sat[b] += w * s;
         }
         let best = 0; for (let i = 1; i < 36; i++) if (wt[i] > wt[best]) best = i;
-        res(wt[best] < 1.5 ? null : { h: best * 10 + 5, s: sat[best] / wt[best] });
+        res(wt[best] < 1.5 ? null : { h: fixH(best * 10 + 5), s: sat[best] / wt[best] });
       } catch (e) { res(null); }
     };
     im.onerror = () => res(null); im.src = IMG + "w92" + path;
@@ -72,34 +73,80 @@ function palette(path) {
 const hsl = (h, s, l) => `hsl(${h.toFixed(0)} ${(s * 100).toFixed(0)}% ${l}%)`;
 const clampS = s => Math.min(.8, Math.max(.4, s));
 function applyTint(el, p) {          // p = null falls back to champagne gold
-  const h = p ? p.h : 40, s = p ? clampS(p.s) : .45;
-  Object.entries({ "--a0": hsl(h, s * .5, 93), "--a1": hsl(h, s * .85, 76), "--a2": hsl(h, s, 62), "--a3": hsl(h, s * .9, 38) }).forEach(([k, v]) => el.style.setProperty(k, v));
+  const h = p ? p.h : 36, s = p ? clampS(p.s) * .75 : .36;
+  Object.entries({ "--a0": hsl(h, s * .5, 87), "--a1": hsl(h, s * .85, 68), "--a2": hsl(h, s, 52), "--a3": hsl(h, s * .95, 29) }).forEach(([k, v]) => el.style.setProperty(k, v));
 }
 function tintScene(path) {
-  palette(path).then(p => { applyTint($("#hero"), p); $("#ambient").style.setProperty("--amb", p ? hsl(p.h, clampS(p.s), 42) : "#8c6e3a"); });
+  palette(path).then(p => { applyTint($("#hero"), p); $("#ambient").style.setProperty("--amb", p ? hsl(p.h, clampS(p.s) * .75, 30) : "#4a3a20"); });
 }
 document.addEventListener("pointerover", e => {       // each card glows in its own poster's colour on hover
   const pw = e.target.closest?.(".pw"); if (!pw || pw.dataset.t) return;
   const img = pw.querySelector("img"); if (!img) return; pw.dataset.t = 1;
-  palette(img.getAttribute("src").replace(/^.*?\/w\d+/, "")).then(p => p && pw.style.setProperty("--acc", hsl(p.h, clampS(p.s), 62)));
+  palette(img.getAttribute("src").replace(/^.*?\/w\d+/, "")).then(p => p && pw.style.setProperty("--acc", hsl(p.h, clampS(p.s) * .75, 58)));
 });
 
 /* ---------- vault ---------- */
 const inVault = id => vault.some(v => v.id == id);
+let picksT;
+function tasteHTML() {
+  const c = {}; vault.forEach(v => (v.genre_ids || []).forEach(g => c[g] = (c[g] || 0) + 1));
+  const top = Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 4); if (!top.length) return "";
+  return `<div class="taste"><h4>YOUR TASTE</h4>${top.map(([g, n]) => `<div class="trow"><span>${esc(GENRES.get(String(g)) || "Genre")}</span><div class="tbar"><i style="width:${n / top[0][1] * 100}%"></i></div><b>${n}</b></div>`).join("")}</div>`;
+}
 function syncVault() {
   try { localStorage.setItem("gh_vault", JSON.stringify(vault)); } catch (e) {}
   $("#vaultCount").textContent = vault.length;
   $$("[data-save]").forEach(b => b.classList.toggle("on", inVault(b.dataset.save)));
-  const avg = vault.length ? (vault.reduce((a, v) => a + v.vote_average, 0) / vault.length).toFixed(1) : "";
-  $("#vault").innerHTML = `<div class="vhead"><div><h3 class="gold-text">My vault</h3><small class="muted">${vault.length ? `${vault.length} films, avg ★ ${avg}` : ""}</small></div><button data-vclose>Close</button></div>` +
-    (vault.length ? `<div class="vgrid">${vault.map(v => `<div class="vitem"><button class="open" data-open="${v.id}"><div class="pw">${pimg(v, "w185")}</div><span>${esc(v.title)}</span></button>
-        <button class="x" data-save="${v.id}" aria-label="Remove">✕</button></div>`).join("")}</div>`
-      : `<p class="empty">Nothing saved yet. Tap the heart on any film to keep it here.</p>`);
+  const seen = vault.filter(v => v.seen).length, avg = vault.length ? (vault.reduce((a, v) => a + v.vote_average, 0) / vault.length).toFixed(1) : "";
+  $("#vault").innerHTML = `<div class="vhead"><div><h3 class="gold-text">My vault</h3><small class="muted">${vault.length ? `${vault.length} saved, ${seen} watched, avg ★ ${avg}` : ""}</small></div><button data-vclose>Close</button></div>` +
+    (vault.length ? `<div class="vtools"><button data-vcopy>Copy list</button></div>${tasteHTML()}<div class="vgrid">${vault.map(v => `<div class="vitem ${v.seen ? "seen" : ""}"><button class="open" data-open="${v.id}"><div class="pw">${pimg(v, "w185")}</div><span>${esc(v.title)}</span></button>
+        <button class="x" data-save="${v.id}" aria-label="Remove">✕</button><button class="seenbtn" data-seen="${v.id}">${v.seen ? "Watched" : "Mark watched"}</button></div>`).join("")}</div>`
+      : `<p class="empty">Nothing saved yet. Tap the bookmark on any film to keep it here. Your taste and personal picks will appear as you save.</p>`);
+  clearTimeout(picksT); picksT = setTimeout(loadPicks, 700);
 }
 function toggleVault(id) {
   const m = cache.get(+id); if (!m) return;
   if (inVault(id)) { vault = vault.filter(v => v.id != id); toast("Removed from your vault"); } else { vault.unshift(m); toast("Saved to your vault"); }
   syncVault();
+}
+
+function toggleSeen(id) { const v = vault.find(x => x.id == id); if (v) { v.seen = !v.seen; syncVault(); } }
+
+/* ---------- picked for you (based on your vault) ---------- */
+const recCache = new Map();
+const ritem = m => `<div class="ritem"><button class="open" data-open="${m.id}"><div class="pw"><span class="rate">★ ${m.vote_average.toFixed(1)}</span>${pimg(m)}</div><small>${esc(m.title)}</small></button>
+  <button class="save ${inVault(m.id) ? "on" : ""}" data-save="${m.id}" aria-label="Save to vault"><span class="h"></span></button></div>`;
+async function loadPicks() {
+  const box = $("#picks"); if (!vault.length) { box.innerHTML = ""; return; }
+  const src = vault.slice(0, 3); let all = [];
+  for (const v of src) {
+    if (!recCache.has(v.id)) { try { recCache.set(v.id, (await api(`/movie/${v.id}/recommendations`)).results || []); } catch (e) { recCache.set(v.id, []); } }
+    all = all.concat(recCache.get(v.id));
+  }
+  const have = new Set(vault.map(v => v.id)), uniq = [];
+  all.forEach(m => { if (m.poster_path && !have.has(m.id) && !uniq.some(u => u.id === m.id)) uniq.push(m); });
+  const list = uniq.sort((a, b) => b.vote_average - a.vote_average).slice(0, 14); list.forEach(remember);
+  box.innerHTML = list.length ? `<section class="rail"><div class="rhead"><h2 class="gold-text">Picked for you</h2><span>
+    <button class="rbtn" data-rdir="-1" data-rid="picks" aria-label="Scroll left">‹</button><button class="rbtn" data-rdir="1" data-rid="picks" aria-label="Scroll right">›</button></span></div>
+    <p class="picks-sub">Because you saved ${src.map(v => esc(v.title)).join(", ")}</p><div class="rrow" id="rail-picks">${list.map(ritem).join("")}</div></section>` : "";
+}
+
+/* ---------- shareable links: filters and open film live in the URL ---------- */
+let curMovie = null;
+function writeHash() {
+  const p = new URLSearchParams(), s = state;
+  if (s.genres.length) p.set("g", s.genres.join(",")); if (s.gmode !== "any") p.set("gm", s.gmode);
+  if (s.yf) p.set("yf", s.yf); if (s.yt) p.set("yt", s.yt); if (s.rt) p.set("rt", s.rt); if (s.lang) p.set("l", s.lang);
+  if (s.minr) p.set("r", s.minr); if (s.sort !== "popularity.desc") p.set("s", s.sort); if (s.obscure) p.set("o", "1");
+  if (s.mood) p.set("mood", s.mood); if (s.q) p.set("q", s.q); if (curMovie) p.set("m", curMovie);
+  const h = p.toString(); try { history.replaceState(null, "", h ? "#" + h : location.pathname + location.search); } catch (e) {}
+}
+function readHash() {
+  const p = new URLSearchParams(location.hash.slice(1)), s = state;
+  s.genres = p.get("g") ? p.get("g").split(",") : []; s.gmode = p.get("gm") || "any"; s.yf = p.get("yf") || ""; s.yt = p.get("yt") || "";
+  s.rt = p.get("rt") || ""; s.lang = p.get("l") || ""; s.minr = +(p.get("r") || 0); s.sort = p.get("s") || "popularity.desc";
+  s.obscure = p.get("o") === "1"; s.mood = p.get("mood") || ""; s.q = p.get("q") || ""; $("#search").value = s.q;
+  return p.get("m");
 }
 
 /* ---------- hero ---------- */
@@ -156,7 +203,7 @@ function renderFilters() {
   if (state.minr) act.push(["minr", `★ ${state.minr}+`]);
   if (state.obscure) act.push(["obscure", "Incl. obscure"]);
   $("#active").innerHTML = act.length
-    ? act.map(([k, n]) => `<button class="tag" data-clear="${k}">${n} <b>✕</b></button>`).join("") + `<button class="tag clear" data-clearall>Clear all</button>`
+    ? act.map(([k, n]) => `<button class="tag" data-clear="${k}">${n} <b>✕</b></button>`).join("") + `<button class="tag clear" data-clearall>Clear all</button><button class="tag clear" data-share>Copy link to these filters</button>`
     : `<span class="muted">No filters on. You're seeing every film.</span>`;
 }
 function setMood(id) { const m = MOODS.find(x => x.id === id); state.mood = id; state.genres = [...m.g]; state.gmode = m.mode; state.minr = m.min; }
@@ -167,11 +214,11 @@ function clearKey(k) {
   else if (k === "rt") state.rt = ""; else if (k === "lang") state.lang = "";
   else if (k === "minr") { state.minr = 0; state.mood = ""; } else if (k === "obscure") state.obscure = false;
 }
-function apply() { renderFilters(); loadMore(true); }
+function apply() { renderFilters(); loadMore(true); writeHash(); }
 
 async function loadGenres() {
   try { (await api("/genre/movie/list")).genres.forEach(g => GENRES.set(String(g.id), g.name)); } catch (e) {}
-  renderFilters();
+  renderFilters(); syncVault();
 }
 
 // Discover query built from every active filter
@@ -259,7 +306,7 @@ gridEl.addEventListener("pointerout", e => { const pw = e.target.closest?.(".pw"
 /* ---------- movie popup ---------- */
 const yt = k => `<iframe src="https://www.youtube-nocookie.com/embed/${k}?autoplay=1&rel=0&modestbranding=1&playsinline=1${location.protocol.startsWith("http") ? "&origin=" + encodeURIComponent(location.origin) : ""}" title="Trailer" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
 async function openMovie(id, autoplay = false) {
-  const dlg = $("#modal");
+  const dlg = $("#modal"); curMovie = id; writeHash();
   ["--a0", "--a1", "--a2", "--a3"].forEach(k => dlg.style.removeProperty(k));
   dlg.innerHTML = `<div class="m-body"><p class="loadmsg">Loading…</p></div>`; if (!dlg.open) dlg.showModal(); dlg.scrollTop = 0;
   let m;
@@ -291,7 +338,7 @@ async function openMovie(id, autoplay = false) {
         <div>${year(m) !== "TBA" ? `<span class="pill">${year(m)}</span>` : ""}${m.runtime ? `<span class="pill">${Math.floor(m.runtime / 60)}h ${m.runtime % 60}m</span>` : ""}${(m.genres || []).map(g => `<span class="pill">${esc(g.name)}</span>`).join("")}</div></div>
       </div>
       <div class="btns"><button class="savebtn ${inVault(m.id) ? "on" : ""}" data-save="${m.id}"><span class="h"></span> Save to vault</button>
-      <button data-copy="${esc(m.title)}">Copy title</button></div>
+      <button data-share>Copy link</button><button data-copy="${esc(m.title)}">Copy title</button></div>
       ${m.tagline ? `<p class="tagline">${esc(m.tagline)}</p>` : ""}
       <p>${esc(m.overview) || "No description yet."}</p>
       ${dir ? `<p class="muted">Directed by ${esc(dir)}</p>` : ""}
@@ -302,7 +349,7 @@ async function openMovie(id, autoplay = false) {
       ${more.length ? `<h4>If you liked this</h4><div class="similar">${more.map(r => `<button class="open" data-open="${r.id}"><div class="pw">${pimg(r, "w185")}</div><span>${esc(r.title)}</span></button>`).join("")}</div>` : ""}
     </div>`;
 }
-$("#modal").addEventListener("close", () => $("#modal").innerHTML = "");
+$("#modal").addEventListener("close", () => { $("#modal").innerHTML = ""; curMovie = null; writeHash(); });
 
 /* ---------- surprise roulette (respects your filters) ---------- */
 async function surprise() {
@@ -371,6 +418,9 @@ document.addEventListener("click", e => {
   if (q("[data-dot]")) return showHero(+q("[data-dot]").dataset.dot);
   if (q("[data-play]")) return $("#mtop").innerHTML = yt(q("[data-play]").dataset.play);
   if (q("[data-vid]")) { $$("[data-vid]").forEach(b => b.classList.toggle("on", b === q("[data-vid]"))); return $("#mtop").innerHTML = yt(q("[data-vid]").dataset.vid); }
+  if (q("[data-share]")) { navigator.clipboard?.writeText(location.href); return toast("Link copied"); }
+  if (q("[data-seen]")) return toggleSeen(q("[data-seen]").dataset.seen);
+  if (q("[data-vcopy]")) { navigator.clipboard?.writeText(vault.map(v => `${v.title} (${year(v)})`).join("\n")); return toast("List copied"); }
   if (q("[data-copy]")) { navigator.clipboard?.writeText(q("[data-copy]").dataset.copy); return toast("Title copied"); }
   if (q("[data-close]") || t.id === "modal") return $("#modal").close();
   if (q("[data-mood]")) { const id = q("[data-mood]").dataset.mood; state.mood === id ? clearKey("mood") : setMood(id); return apply(); }
@@ -399,11 +449,13 @@ $("#surprise").onclick = surprise;
 $("#quizBtn").onclick = () => quiz();
 $("#toTop").onclick = () => scrollTo({ top: 0, behavior: "smooth" });
 let debounce;
-$("#search").oninput = e => { clearTimeout(debounce); debounce = setTimeout(() => { state.q = e.target.value.trim(); loadMore(true); }, 400); };
+$("#search").oninput = e => { clearTimeout(debounce); debounce = setTimeout(() => { state.q = e.target.value.trim(); loadMore(true); writeHash(); }, 400); };
 document.addEventListener("keydown", e => {
   if (e.key === "/" && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); $("#search").focus(); }
   if (e.key === "Escape") { $("#vault").classList.remove("open"); $("#roulette").className = "roulette"; $("#quiz").className = "roulette"; }
 });
 
 /* ---------- start ---------- */
+const firstMovie = readHash();
 syncVault(); renderFilters(); loadHero(); loadGenres(); loadMore(true);
+if (firstMovie) openMovie(firstMovie);
