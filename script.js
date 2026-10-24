@@ -1,5 +1,6 @@
 // 👇 PASTE YOUR TMDB API KEY (v3) HERE
 const KEY = "3ecb15e92ff4f2224b44b19eb3eb8648";
+
 const API = "https://api.themoviedb.org/3", IMG = "https://image.tmdb.org/t/p/", REGION = "IN"; // REGION = country for "where to watch"
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -337,7 +338,7 @@ async function openMovie(id, autoplay = false) {
         <div>${year(m) !== "TBA" ? `<span class="pill">${year(m)}</span>` : ""}${m.runtime ? `<span class="pill">${Math.floor(m.runtime / 60)}h ${m.runtime % 60}m</span>` : ""}${(m.genres || []).map(g => `<span class="pill">${esc(g.name)}</span>`).join("")}</div></div>
       </div>
       <div class="btns"><button class="savebtn ${inVault(m.id) ? "on" : ""}" data-save="${m.id}"><span class="h"></span> Save to vault</button>
-      <button data-share>Copy link</button><button data-copy="${esc(m.title)}">Copy title</button></div>
+      <button data-constel="${m.id}">Constellation</button><button data-share>Copy link</button><button data-copy="${esc(m.title)}">Copy title</button></div>
       ${m.tagline ? `<p class="tagline">${esc(m.tagline)}</p>` : ""}
       <p>${esc(m.overview) || "No description yet."}</p>
       ${dir ? `<p class="muted">Directed by ${esc(dir)}</p>` : ""}

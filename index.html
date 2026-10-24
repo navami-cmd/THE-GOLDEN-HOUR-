@@ -55,6 +55,16 @@
 <section class="hero themed" id="hero"></section>
 
 <main class="browse">
+  <section class="labs" id="labs">
+    <div class="rhead"><h2 class="gold-text">Four new ways to find a film</h2></div>
+    <div class="ltiles">
+      <button class="ltile" data-lab="mood"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="5" width="30" height="30" rx="2"/><path d="M20 5v30M5 20h30"/><circle cx="26" cy="14" r="3.2"/></svg><b>Mood Map</b><span>Drag a point across tone and intensity.</span></button>
+      <button class="ltile" data-lab="time"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="15"/><circle cx="20" cy="20" r="9"/><circle cx="20" cy="20" r="2.5"/><path d="M20 5v4"/></svg><b>Time Machine</b><span>Spin the record to any year.</span></button>
+      <button class="ltile" data-lab="constel"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="4"/><circle cx="8" cy="10" r="2.5"/><circle cx="32" cy="12" r="2.5"/><circle cx="30" cy="32" r="2.5"/><circle cx="9" cy="30" r="2.5"/><path d="M18 17L10 12M23 17l7-4M23 24l6 6M17 24l-7 5"/></svg><b>Constellation</b><span>Travel from film to film through orbit.</span></button>
+      <button class="ltile" data-lab="night"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M5 12h30v6a3 3 0 0 0 0 6v6H5v-6a3 3 0 0 0 0-6z"/><path d="M26 12v18" stroke-dasharray="2 2"/></svg><b>Night Planner</b><span>A double feature, scheduled to the minute.</span></button>
+    </div>
+  </section>
+  <div id="hour"></div>
   <div id="picks"></div>
   <div id="rails"></div>
 
@@ -117,11 +127,13 @@
 <div class="roulette" id="roulette"></div>
 <div class="roulette" id="quiz"></div>
 <button id="toTop" aria-label="Back to top">↑</button>
+<div class="lab themed" id="lab" role="dialog" aria-modal="true"></div>
 <dialog id="modal" class="themed"></dialog>
 <div id="toast" role="status"></div>
 
 <script src="galaxy.js"></script>
 <script src="intro.js"></script>
 <script src="script.js"></script>
+<script src="labs.js"></script>
 </body>
 </html>

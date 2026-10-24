@@ -1,155 +1,80 @@
-# Golden Hour
+<div align="center">
 
-A cinematic movie discovery website built with plain HTML, CSS and JavaScript. No frameworks, no build step.
+<img src="logo.svg" alt="Golden Hour" width="130">
 
-Browse trending films, filter by mood, genre, era, language and rating, watch trailers, see where a film is streaming, and save favourites to your own vault. The look is near-black with dark antique gold used for lines, text and shimmer (not bright yellow fills), and the hero, popup and cards take on the colours of each film's poster.
+# GOLDEN HOUR
 
-Movie data comes from [The Movie Database (TMDB)](https://www.themoviedb.org/).
+**every film has its light**
 
----
+A cinematic movie discovery site. Dark gold, moving galaxy, and four new ways to find your next film.
 
-## Features
+![HTML5](https://img.shields.io/badge/HTML5-0a0908?style=for-the-badge&logo=html5&logoColor=C5B189)
+![CSS3](https://img.shields.io/badge/CSS3-0a0908?style=for-the-badge&logo=css3&logoColor=C5B189)
+![JavaScript](https://img.shields.io/badge/JavaScript-0a0908?style=for-the-badge&logo=javascript&logoColor=C5B189)
+![TMDB](https://img.shields.io/badge/TMDB_API-0a0908?style=for-the-badge&logo=themoviedatabase&logoColor=C5B189)
+![No build](https://img.shields.io/badge/no_build_step-0a0908?style=for-the-badge&logoColor=C5B189)
 
-**Look and feel**
-- Cinematic intro (about 5 seconds): a gold record spins on a black marble deck, then the title arrives with a shimmer. Click anywhere to skip.
-- Moving golden galaxy background: a rotating spiral, drifting nebula, twinkling stars, floating dust and shooting stars. It reacts slightly to the mouse.
-- Per-film colour theming: the hero, popup and card hover glow match the dominant colour of each poster.
-- Film grain, vignette, 3D tilting posters and gold shimmer text.
+<!-- Add a screenshot here:  ![Golden Hour](screenshots/home.png) -->
 
-**Discovering movies**
-- Infinite scroll through TMDB's catalogue, with a placeholder card for films that have no poster.
-- Top 10 this week, In theatres now and Coming soon rows.
-- Search by title. Your filters apply to search results too.
-- Mood presets: Cozy night in, Mind-bending, Edge of my seat, Cry it out, Date night, Epic escape, Spooky hours, Laugh out loud.
-- Multi-select genres with Match any or Match all.
-- Era buttons (1960s to 2020s, Classics) plus From year / To year for any range back to 1900.
-- Length, language, minimum rating, sort order and an Include obscure films option.
-- Active filter tags you can remove one by one, and a Clear all button.
-- Surprise me: a poster roulette that picks a film using your current filters.
-- 3-question quiz that sets the filters and then picks a film.
-
-**Movie popup**
-- Trailer that plays inside the page, with buttons to switch between trailers, teasers and clips.
-- Rating ring, runtime, genres, tagline, overview and director.
-- Where to watch (streaming, rent or buy) for your region.
-- Cast photos and an If you liked this row.
-
-**Vault and personalisation**
-- Save films with the bookmark button. They are stored in your browser (`localStorage`).
-- Mark films as watched, and copy your whole list as text.
-- Your taste: bars showing the genres you save most.
-- Picked for you: a row of recommendations based on the films in your vault.
-
-**Shareable links**
-- Filters, search and the open film are stored in the page address. Copy the link and anyone gets the same view.
-
-**Shortcuts**
-- `/` focuses the search box.
-- `Esc` closes the vault, quiz and roulette.
+</div>
 
 ---
 
-## Project structure
+## The Labs
+
+Four ways to find a film that a normal movie site doesn't have.
+
+| | | |
+|---|---|---|
+| **Mood Map** | Drag a marker across *dark to bright* and *calm to intense*. The nearest genres light up and films appear. | One drag, no filters |
+| **Time Machine** | Spin a gold record to any year from 1920 to today. Best of that year, instantly. | Drag, scroll or arrow keys |
+| **Constellation** | Pick a film and similar ones orbit around it. Click any to travel there. The colours follow. | Explore by similarity |
+| **Night Planner** | Choose a start time and vibe. Get a double or triple feature with intermissions and an end time. | Copy the plan |
+
+Plus a **For a Saturday night** row that changes with the time of day.
+
+---
+
+## Highlights
+
+| Look | Discovery | Personal |
+|---|---|---|
+| 5-second cinematic intro | Mood presets and 3-question quiz | Vault with watched marks |
+| Moving gold galaxy | Multi-genre filters (match any or all) | Taste bars from your saves |
+| Colours match each poster | Era, year range, length, language, rating | Picked-for-you row |
+| Shimmering dark-gold type | Surprise me roulette | Shareable links |
+| 3D tilting posters | Trailers and where to watch | Search with filters |
+
+---
+
+## Run it
+
+1. Open the folder in **VS Code**
+2. Right-click `index.html` and choose **Open with Live Server**
+
+> Use a local server, not a double-click. YouTube blocks trailers on `file://` pages.
+
+---
+
+## Shortcuts
+
+`/` search &nbsp;&middot;&nbsp; `Esc` close panels &nbsp;&middot;&nbsp; `Arrow keys` spin the Time Machine &nbsp;&middot;&nbsp; `Shift + Arrow` jump 10 years
+
+---
+
+## Files
 
 ```
-goldenhour/
-├── index.html    page structure and intro markup
-├── style.css     all styling, colours and animations
-├── script.js     TMDB calls, filters, popup, vault, theming
-├── intro.js      the 5-second intro sequence
-├── galaxy.js     the animated galaxy background (canvas)
-├── logo.svg      logo (rising sun made of record grooves)
-└── README.md
+index.html   page          script.js   filters, popup, vault
+style.css    look          labs.js     the four Labs
+intro.js     intro         galaxy.js   moving background
+logo.svg     logo
 ```
 
 ---
 
-## Getting started
+<div align="center">
 
-### 1. Get a free TMDB API key
-1. Create a free account at [themoviedb.org](https://www.themoviedb.org/).
-2. Go to **Settings > API** and request a key (choose Developer, personal use).
-3. Copy the **API Key (v3 auth)**.
+Film data from [TMDB](https://www.themoviedb.org/). This product uses the TMDB API but is not endorsed or certified by TMDB.
 
-### 2. Add your key
-Open `script.js` and paste the key at the very top:
-
-```js
-const KEY = "PASTE_YOUR_TMDB_KEY_HERE";
-```
-
-### 3. Run it locally
-Run the site through a local server. **Do not double-click `index.html`**, because YouTube blocks trailers on `file://` pages (Error 153).
-
-**Option A: VS Code (easiest)**
-1. Install the **Live Server** extension.
-2. Right-click `index.html` and choose **Open with Live Server**.
-
-**Option B: Python**
-```bash
-python -m http.server 5500
-```
-Then open `http://localhost:5500`.
-
----
-
-## Configuration
-
-| What | Where | Default |
-| --- | --- | --- |
-| TMDB API key | `KEY` at the top of `script.js` | placeholder |
-| Streaming region | `REGION` near the top of `script.js` | `"IN"` (India) |
-| Mood presets | `MOODS` array in `script.js` | 8 moods |
-| Era buttons | `ERAS` array in `script.js` | 1960s to 2020s, Classics |
-| Intro timing | `setTimeout` values in `intro.js` | reveal at 2s, ends at 5s |
-| Galaxy star count | `2200` in `galaxy.js` | lower it if the page lags |
-| Colours | `:root` variables in the last section of `style.css` (`--a0` to `--a3`, `--metal`, `--btn`) | dark antique gold |
-
-To change the streaming country, use a two-letter code such as `"US"`, `"GB"` or `"AU"`.
-
----
-
-## Deploying (GitHub Pages)
-
-1. Push the folder to a GitHub repository.
-2. In the repo, go to **Settings > Pages**, choose your branch and the root folder, and save.
-3. Your site will be live at `https://<your-username>.github.io/<repo-name>/`.
-
-**About your API key:** this is a front-end-only project, so the TMDB key is visible to anyone who views the page source. For a personal or portfolio project this is normal, and TMDB keys are free and can be regenerated. If you want to keep the key private, you would need a small backend or serverless function that makes the TMDB requests for you.
-
----
-
-## Troubleshooting
-
-| Problem | Fix |
-| --- | --- |
-| Hero says "Add your TMDB key", or nothing loads | The key is missing or wrong. Check `KEY` in `script.js` and refresh. |
-| Trailer shows a YouTube error (Error 153) | You opened the file directly. Run it with Live Server or `python -m http.server`. |
-| "No trailer is listed for this film" | TMDB has no trailer for that title. Use the Search on YouTube link. |
-| Trailer is blocked or unavailable | The studio disabled embedding. Use the Open on YouTube link. |
-| Colours don't change per film | The browser blocked reading the poster colours. Make sure you are using a local server, not `file://`. The site falls back to champagne gold. |
-| Page feels slow | Lower the star count in `galaxy.js` (the number `2200`). |
-| Intro doesn't play | Your system has "reduce motion" turned on, so the intro is skipped on purpose. |
-| Vault is empty after switching browsers | The vault is saved per browser and per site address. |
-
----
-
-## Browser support
-
-Works in current versions of Chrome, Edge, Safari and Firefox. The smooth colour transitions use CSS `@property` and `color-mix()`, which need a fairly recent browser. On older browsers the site still works, with colours changing instantly.
-
----
-
-## Credits
-
-- Movie data and images: [TMDB](https://www.themoviedb.org/).
-- Fonts: Cinzel, Cormorant Garamond and DM Sans from Google Fonts.
-- Trailers: embedded from YouTube.
-
-*This product uses the TMDB API but is not endorsed or certified by TMDB.*
-
----
-
-## License
-
-Add the license of your choice here (for example MIT).
+</div>
