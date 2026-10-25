@@ -20,7 +20,7 @@ A cinematic movie discovery site. Dark gold, moving galaxy, and a few new ways t
 
 ---
 
-Golden Hour feels like a night at the cinema. It opens on a spinning gold record, drifts through a moving galaxy, and re-colours itself to match the poster of every film you look at. Browse by mood, era and language, watch trailers, and keep a personal vault that learns your taste. Or skip the scrolling: let a film's **constellation** pull you from one movie to the next through its director and cast, or have the **Night Planner** schedule a whole double feature, intermission included.
+Golden Hour feels like a night at the cinema. It opens on a spinning gold record, drifts through a moving galaxy, and re-colours itself to match the poster of every film you look at. Browse by mood, era and language, watch trailers, jump to Netflix, Prime Video and more to watch the full film, and keep a personal vault that learns your taste. Or skip the scrolling: let a film's **constellation** pull you from one movie to the next through its director and cast, or have the **Night Planner** schedule a whole double feature, intermission included.
 
 ---
 

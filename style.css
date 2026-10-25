@@ -445,3 +445,21 @@ dialog{background:#0a0907}
 .cnode span b{display:block;font-size:.76rem;color:#f1ead8}
 .cnode span em{display:block;font-style:normal;color:#cdb98f;margin-top:2px}
 .ltiles{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+
+/* Watch the full film */
+.watchbar{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-end;padding:16px 18px;margin:0 0 18px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(160deg,rgba(26,22,16,.7),rgba(8,7,5,.8))}
+.watchbar small{display:block;letter-spacing:.18em;font-size:.68rem;color:var(--muted);margin-bottom:8px}
+.pgrid{display:flex;gap:10px;flex-wrap:wrap}
+.pbtn{display:grid;justify-items:center;gap:6px;width:78px;padding:8px 4px;border-radius:14px;background:none;border:1px solid transparent;font-size:.7rem;color:var(--cream);line-height:1.2;text-align:center}
+.pbtn img{width:52px;height:52px;border-radius:12px;border:1px solid var(--line);transition:.25s}
+.pbtn:hover{border-color:var(--a1);background:rgba(160,130,82,.1)}
+.pbtn:hover img{box-shadow:0 0 22px color-mix(in srgb,var(--a2) 45%,transparent);transform:scale(1.06)}
+.pgrid.small .pbtn{width:62px}.pgrid.small .pbtn img{width:38px;height:38px;border-radius:9px}
+.watchbar .ytlink{margin-left:auto;align-self:center}
+.leave{position:fixed;inset:0;z-index:9;display:none;place-items:center;background:rgba(3,2,1,.88);backdrop-filter:blur(8px);padding:20px}
+.leave.show{display:grid;animation:lvin .25s both}
+@keyframes lvin{from{opacity:0}}
+.leavebox{max-width:420px;text-align:center;display:grid;justify-items:center;gap:12px;padding:30px;border:1px solid var(--a2);border-radius:20px;background:#0c0a07;box-shadow:0 0 60px color-mix(in srgb,var(--a2) 25%,transparent)}
+.plogo{width:88px;height:88px;border-radius:20px;border:1px solid var(--line);box-shadow:0 0 40px color-mix(in srgb,var(--a2) 35%,transparent)}
+.leavebox h3{font:700 1.4rem 'Cinzel',serif;margin:0}.leavebox p{color:#d8d1c2;margin:0}.leavebox small{color:var(--muted)}
+.btnlink{display:inline-block;padding:11px 26px;border-radius:99px;text-decoration:none;font-weight:600}

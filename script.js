@@ -322,14 +322,27 @@ async function openMovie(id, autoplay = false) {
   const stream = [...(prov.flatrate || []), ...(prov.free || [])], rent = [...(prov.rent || []), ...(prov.buy || [])];
   const more = (m.recommendations?.results || []).filter(r => r.poster_path).slice(0, 10); more.forEach(remember);
   const search = `https://www.youtube.com/results?search_query=${encodeURIComponent(m.title + " " + year(m) + " official trailer")}`;
+  // "Watch the full film" bar: provider logos that lead to the service itself
+  const T = encodeURIComponent(m.title), wl = prov.link || `https://www.themoviedb.org/movie/${m.id}/watch?locale=${REGION}`;
+  const direct = n => { n = n.toLowerCase();
+    return n.includes("netflix") ? `https://www.netflix.com/search?q=${T}`
+      : n.includes("prime video") || n.includes("amazon") ? `https://www.primevideo.com/search?phrase=${T}`
+      : n.includes("youtube") ? `https://www.youtube.com/results?search_query=${T}+${year(m)}` : wl; };
+  const uniq = a => [...new Map(a.map(p => [p.provider_id, p])).values()];
+  const pbtn = p => `<button class="pbtn" data-prov="${esc(p.provider_name)}" data-url="${esc(direct(p.provider_name))}" data-logo="${IMG}w154${p.logo_path}" data-title="${esc(m.title)}"><img src="${IMG}w92${p.logo_path}" alt=""><span>${esc(p.provider_name)}</span></button>`;
+  const watchbar = `<div class="watchbar"><div><small>WATCH THE FULL FILM</small>${stream.length ? `<div class="pgrid">${uniq(stream).map(pbtn).join("")}</div>` : `<p class="muted" style="margin:0">Not on a streaming service in ${REGION} right now.</p>`}</div>
+    ${rent.length ? `<div><small>RENT OR BUY</small><div class="pgrid small">${uniq(rent).slice(0, 6).map(pbtn).join("")}</div></div>` : ""}
+    <a class="ytlink" href="${wl}" target="_blank" rel="noopener">All options</a></div>`;
   const top = autoplay && trailer ? yt(trailer.key)
     : (m.backdrop_path ? `<img src="${IMG}w1280${m.backdrop_path}" alt="">` : "") +
       (trailer ? `<button class="play" data-play="${trailer.key}" aria-label="Play trailer"><i class="tri"></i></button>`
                : `<div class="notrailer"><span>No trailer is listed for this film.</span><a href="${search}" target="_blank" rel="noopener">Search on YouTube</a></div>`);
   dlg.innerHTML = `
     <button class="close" data-close>Close</button>
+    <div class="leave" id="leave"></div>
     <div class="m-top" id="mtop">${top}</div>
     <div class="m-body">
+      ${watchbar}
       ${trailer ? `<div class="vids">${vids.map((v, i) => `<button class="${i === 0 ? "on" : ""}" data-vid="${v.key}">${esc(v.name.length > 26 ? v.name.slice(0, 25) + "…" : v.name)}</button>`).join("")}
         <a class="ytlink" href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener">Open on YouTube</a></div>` : ""}
       <div class="m-head">
@@ -342,9 +355,6 @@ async function openMovie(id, autoplay = false) {
       ${m.tagline ? `<p class="tagline">${esc(m.tagline)}</p>` : ""}
       <p>${esc(m.overview) || "No description yet."}</p>
       ${dir ? `<p class="muted">Directed by ${esc(dir)}</p>` : ""}
-      <h4>Where to watch in ${REGION}</h4>
-      <div class="provs">${stream.length ? stream.map(p => `<img src="${IMG}w92${p.logo_path}" alt="${esc(p.provider_name)}" title="${esc(p.provider_name)}">`).join("") : `<span class="muted">Not streaming here right now.</span>`}
-        ${rent.length ? `<small class="muted">Rent or buy: ${[...new Set(rent.map(p => esc(p.provider_name)))].slice(0, 4).join(", ")}</small>` : ""}</div>
       ${cast.length ? `<h4>Cast</h4><div class="cast">${cast.map(c => `<div><img loading="lazy" src="${IMG}w185${c.profile_path}" alt=""><b>${esc(c.name)}</b><small>${esc(c.character)}</small></div>`).join("")}</div>` : ""}
       ${more.length ? `<h4>If you liked this</h4><div class="similar">${more.map(r => `<button class="open" data-open="${r.id}"><div class="pw">${pimg(r, "w185")}</div><span>${esc(r.title)}</span></button>`).join("")}</div>` : ""}
     </div>`;
@@ -416,6 +426,15 @@ document.addEventListener("click", e => {
   if (q("[data-playmovie]")) { $("#vault").classList.remove("open"); return openMovie(q("[data-playmovie]").dataset.playmovie, true); }
   if (q("[data-open]")) { $("#vault").classList.remove("open"); return openMovie(q("[data-open]").dataset.open); }
   if (q("[data-dot]")) return showHero(+q("[data-dot]").dataset.dot);
+  if (q("[data-prov]")) {
+    const d = q("[data-prov]").dataset, lv = $("#leave");
+    lv.innerHTML = `<div class="leavebox"><img class="plogo" src="${d.logo}" alt=""><h3>Continue on ${d.prov}</h3>
+      <p>Watch <b>${d.title}</b> on ${d.prov}. You'll sign in with your own account on their site.</p>
+      <a class="primary btnlink" href="${d.url}" target="_blank" rel="noopener noreferrer" data-leaveclose>Continue to ${d.prov}</a>
+      <button data-leaveclose>Not now</button><small>Golden Hour doesn't host films. Availability can change.</small></div>`;
+    return lv.classList.add("show");
+  }
+  if (q("[data-leaveclose]") || t.id === "leave") return $("#leave").classList.remove("show");
   if (q("[data-play]")) return $("#mtop").innerHTML = yt(q("[data-play]").dataset.play);
   if (q("[data-vid]")) { $$("[data-vid]").forEach(b => b.classList.toggle("on", b === q("[data-vid]"))); return $("#mtop").innerHTML = yt(q("[data-vid]").dataset.vid); }
   if (q("[data-share]")) { navigator.clipboard?.writeText(location.href); return toast("Link copied"); }
